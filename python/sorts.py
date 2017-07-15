@@ -36,6 +36,20 @@ def merge_sort(alist):
     return merge(left, right)
 
 
+def bozo_sort(alist):
+    while not check_sorted(alist):
+        pos_one = random.randint(0, len(alist) - 1)
+        pos_two = random.randint(0, len(alist) - 1)
+        while pos_one == pos_two:
+            pos_one = random.randint(0, len(alist) - 1)
+        alist[pos_one], alist[pos_two] = alist[pos_two], alist[pos_one]
+
+
+def bogo_sort(alist):
+    while not check_sorted(alist):
+        random.shuffle(alist)
+
+
 def bubble_sort(alist):
     for i in range(0, len(alist)):
         swapped = False
@@ -54,15 +68,12 @@ def insertion_sort(alist):
                 alist[j - 1], alist[j] = alist[j], alist[j - 1]
 
 def selection_sort(alist):
-    smallest = sys.maxint
-    swap_pos = 0
     for i in range(0, len(alist)):
+        smallest_pos = i
         for j in range(i, len(alist)):
-            if alist[j] < smallest:
-                swap_pos = j
-                smallest = alist[j]
-        alist[i], alist[swap_pos] = alist[swap_pos], alist[i]
-        smallest = sys.maxint
+            if alist[j] < alist[smallest_pos]:
+                smallest_pos = j
+        alist[i], alist[smallest_pos] = alist[smallest_pos], alist[i]
 
 def check_sorted(alist):
     for i in range(0, len(alist) - 1):
@@ -70,7 +81,7 @@ def check_sorted(alist):
             return False
     return True
 
-def time_sort(alist, orig, sort):
+def time_sort(orig, sort):
     alist = list(orig)
     start = time.time()
     if sort == merge_sort:
@@ -85,11 +96,17 @@ def time_sort(alist, orig, sort):
 
 def main():
     orig = []
-    for i in range(10000):
-        orig.append(random.randint(0, 100000))
-    sorts = [list.sort, merge_sort, bubble_sort, selection_sort, insertion_sort]
+    for i in range(11):
+        orig.append(random.randint(0, 1000))
+    sorts = [list.sort, merge_sort, bubble_sort,
+             selection_sort, insertion_sort]
+    bad_sorts = [bozo_sort, bogo_sort]
+    random.shuffle(sorts)
+    random.shuffle(bad_sorts)
     for sort in sorts:
-        time_sort([], orig, sort)
+        time_sort(orig, sort)
+    for bad_sort in bad_sorts:
+        time_sort(orig, bad_sort)
 
 
 
