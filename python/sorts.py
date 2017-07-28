@@ -1,6 +1,22 @@
 import sys
 import random
 import time
+import heapq
+import copy
+
+def heap_sort(alist):
+    temp = []
+    heapq.heapify(alist)
+    while alist:
+        temp.append(heapq.heappop(alist))
+    alist[:] = temp
+
+def heap_sort2(alist):
+    temp = []
+    for item in alist:
+        heapq.heappush(temp, item)
+
+    alist[:] = [heapq.heappop(temp) for i in range(len(temp))]
 
 def merge(right, left):
     ret = []
@@ -24,6 +40,28 @@ def merge(right, left):
 
     return ret
 
+def quick_sort(alist):
+   quickSortHelper(alist,0,len(alist)-1)
+
+def quickSortHelper(alist,first,last):
+   if first<last:
+
+       splitpoint = partition(alist,first,last)
+
+       quickSortHelper(alist,first,splitpoint-1)
+       quickSortHelper(alist,splitpoint+1,last)
+
+
+def partition(alist,first,last):
+   pivotvalue = alist[first]
+
+   leftmark = first+1
+   rightmark = last
+
+   done = False
+   while not done:
+       while leftmark <= rightmark and alist[leftmark] <= pivotvalue:
+           leftmark = leftmark + 1
 
 def merge_sort(alist):
     if len(alist) == 1:
@@ -35,6 +73,29 @@ def merge_sort(alist):
     right = merge_sort(right)
     return merge(left, right)
 
+def merge_sort2(alist):
+    if len(alist)>1:
+        mid = len(alist)//2
+        lefthalf = alist[:mid]
+        righthalf = alist[mid:]
+
+        merge_sort2(lefthalf)
+        merge_sort2(righthalf)
+
+        i=0
+        j=0
+        k=0
+        while i < len(lefthalf) and j < len(righthalf):
+            if lefthalf[i] < righthalf[j]:
+                alist[k]=lefthalf[i]
+                i=i+1
+            else:
+                alist[k]=righthalf[j]
+                j=j+1
+            k=k+1
+
+        while i < len(lefthalf):
+            alist[k]=lefthalf[i]
 
 def bozo_sort(alist):
     while not check_sorted(alist):
@@ -92,21 +153,19 @@ def time_sort(orig, sort):
     if not check_sorted(alist):
         print str(sort) + "failed!!!"
         return
-    print str(sort) + " took: ", str(end - start) + " seconds"
+    print str(sort) + " took: " +  str(end - start) + " seconds"
 
 def main():
     orig = []
-    for i in range(11):
-        orig.append(random.randint(0, 1000))
-    sorts = [list.sort, merge_sort, bubble_sort,
-             selection_sort, insertion_sort]
+    for i in range(10 ** 6):
+        orig.append(random.randint(0, 10 ** 6))
+    elem_sorts = [insertion_sort, bubble_sort, selection_sort]
+    adv_sorts = [merge_sort, list.sort, heap_sort, heap_sort2]
     bad_sorts = [bozo_sort, bogo_sort]
-    random.shuffle(sorts)
-    random.shuffle(bad_sorts)
-    for sort in sorts:
+    holder = [elem_sorts, adv_sorts, bad_sorts]
+    random.shuffle(holder[1])
+    for sort in holder[1]:
         time_sort(orig, sort)
-    for bad_sort in bad_sorts:
-        time_sort(orig, bad_sort)
 
 
 

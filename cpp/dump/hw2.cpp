@@ -136,5 +136,6 @@ void test_merge2(){
 }
 
 int main(){
-  test_merge2();  
+    test_merge2();
+    // test_min_pq();
 }

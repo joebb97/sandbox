@@ -8,6 +8,8 @@
 .DS_Store
 .ycm*
 *.o
+*.out
+*.pyc
 cpp/sorts/.idea/
 cpp/sorts/cmake-build-debug/
 java/cryptography_compression/bin/
