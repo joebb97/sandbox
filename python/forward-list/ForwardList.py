@@ -29,4 +29,30 @@ class ForwardList:
             while marker.next:
                 marker = marker.next
             marker.next = Node(data)
+    
+    def prepend(self, data):
+        new_head = Node(data, self.head)
+        self.head = new_head
 
+    def pop_back(self):
+        assert self.head
+        marker = self.head
+        next = marker.next
+        if not next:
+            self.head = None
+            del marker
+        else:
+            while next.next:
+                marker = next
+                next = marker.next
+            marker.next = None
+            del next
+
+    def pop_front(self):
+        assert self.head
+        next = self.head.next
+        del self.head
+        self.head = next
+
+    def front():
+        return self.head.datum
