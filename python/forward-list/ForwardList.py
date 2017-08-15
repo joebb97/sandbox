@@ -9,8 +9,9 @@ class Node:
 
 class ForwardList:
 
-    def __init__(self, head=None):
+    def __init__(self, head=None, tail=None):
         self.head = head
+        self.tail = tail
 
     def __str__(self):
         ret = ""
@@ -24,11 +25,10 @@ class ForwardList:
     def append(self, data):
         if not self.head:
             self.head = Node(data)
+            self.tail = self.head
         else:
-            marker = self.head
-            while marker.next:
-                marker = marker.next
-            marker.next = Node(data)
+            self.tail.next = Node(data)
+            self.tail = self.tail.next
     
     def prepend(self, data):
         new_head = Node(data, self.head)
@@ -47,6 +47,7 @@ class ForwardList:
                 next = marker.next
             marker.next = None
             del next
+            self.tail = marker
 
     def pop_front(self):
         assert self.head
@@ -54,5 +55,8 @@ class ForwardList:
         del self.head
         self.head = next
 
-    def front():
+    def front(self):
         return self.head.datum
+
+    def back(self):
+        return self.tail.datum

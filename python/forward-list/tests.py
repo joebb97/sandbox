@@ -47,6 +47,17 @@ class TestForwardList(unittest.TestCase):
         self.assertEqual(str(self.flist), "22")
         self.flist.pop_front()
         self.assertEqual(str(self.flist), "")
+
+    def test_front_back(self):
+        self.flist.append(1)
+        self.assertEqual(self.flist.front(), 1)
+        self.assertEqual(self.flist.back(), 1)
+        self.flist.prepend(10)
+        self.assertEqual(self.flist.front(), 10)
+        self.assertEqual(self.flist.back(), 1)
+        self.flist.append(125)
+        self.assertEqual(self.flist.front(), 10)
+        self.assertEqual(self.flist.back(), 125)
         
 
 if __name__ == '__main__':
