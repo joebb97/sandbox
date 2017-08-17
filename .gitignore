@@ -17,3 +17,5 @@ java/sorts/.project
 python/.idea
 java/.classpath
 java/.project
+c/*
+cpp/*
