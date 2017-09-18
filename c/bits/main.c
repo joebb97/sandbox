@@ -1,35 +1,38 @@
 #include <stdio.h>
 #include <limits.h>
 
-void display_in_bin(unsigned long n) {
-    unsigned long shifts = 0;
-    for (unsigned long i = 1 << sizeof(n) * CHAR_BIT - 1; shifts < sizeof(n) * 8; i = i >> 1, ++shifts) {
+void display_in_bin(unsigned n) {
+    unsigned shifts = 0;
+    for (unsigned i = 1 << sizeof(n) * CHAR_BIT - 1; shifts < sizeof(n) * CHAR_BIT; i = i >> 1, ++shifts) {
         (n & i) ? printf("1"): printf("0");
     }
     printf("\n");
 }
 
-void print_radices(long n) {
-    printf("Decimal: %ld, Hex: %lx, Octal: %lo, Binary: ", n, n, n);
+void print_radices(int n) {
+    printf("Decimal: %d, Hex: %x, Octal: %o, Binary: ", n, n, n);
     display_in_bin(n);
     printf("\n");
 }
 
-long circular_shift(long x, int shift) {
-    return (x << shift) | (x >> (sizeof(x)* 8 - shift));
+int left_circular_shift(int x, int shift) {
+    return (x << shift) | (x >> (sizeof(x) * CHAR_BIT - shift));
 }
 
-void get_input(long * x, long * y, long * shift) {
-    scanf("%ld %ld %ld", x, y, shift);
+int right_circular_shift(int x, int shift){
+}
+
+void get_input(int * x, int * y, int * shift) {
+    scanf("%d %d %d", x, y, shift);
 }
 
 int main() {
-    // long x, y, shift;
-    // printf("Please enter in 3 numbers: ");
-    // get_input(&x, &y, &shift);
-    // print_radices(x);
-    // print_radices(y);
-    long x = 34;
-    display_in_bin(x);
+    int x, y, shift;
+    printf("Please enter in 3 numbers: ");
+    get_input(&x, &y, &shift);
+    print_radices(x);
+    print_radices(y);
+    printf("2nd number left circular shifted %d places\n", shift);
+    print_radices(left_circular_shift(y, shift));
     return 0;
 }
