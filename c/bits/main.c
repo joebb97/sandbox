@@ -3,7 +3,7 @@
 
 void display_in_bin(unsigned n) {
     unsigned shifts = 0;
-    for (unsigned i = 1 << sizeof(n) * CHAR_BIT - 1; shifts < sizeof(n) * CHAR_BIT; i = i >> 1, ++shifts) {
+    for (unsigned i = 1 << (sizeof(n) * CHAR_BIT - 1); shifts < sizeof(n) * CHAR_BIT; i = i >> 1, ++shifts) {
         (n & i) ? printf("1"): printf("0");
     }
     printf("\n");
@@ -20,13 +20,14 @@ int left_circular_shift(int x, int shift) {
 }
 
 int right_circular_shift(int x, int shift){
+    return 0;
 }
 
 void get_input(int * x, int * y, int * shift) {
     scanf("%d %d %d", x, y, shift);
 }
 
-int main() {
+void prog1(){
     int x, y, shift;
     printf("Please enter in 3 numbers: ");
     get_input(&x, &y, &shift);
@@ -34,5 +35,17 @@ int main() {
     print_radices(y);
     printf("2nd number left circular shifted %d places\n", shift);
     print_radices(left_circular_shift(y, shift));
-    return 0;
+}
+
+void prog2(){
+    int x = 0;
+    print_radices(x);
+    int mask = 0b101;
+    x |= mask << 22;
+    print_radices(x);
+}
+
+int main() {
+    //prog1();
+    prog2();
 }
