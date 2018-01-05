@@ -1,6 +1,7 @@
 *
 !*/
 !*.*
+!Makefile
 *.swp
 .color_coded
 *.ycm
