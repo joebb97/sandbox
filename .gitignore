@@ -18,3 +18,5 @@ python/.idea
 java/.classpath
 java/.project
 python/deepfield/
+go/bin/
+go/pkg/

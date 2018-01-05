@@ -156,7 +156,8 @@ int main(int argc, char** argv)
 	// cout << b << endl;
 	// cout << *y << endl;
 	// cout << z << endl;
-
+    int i = 40;
+    cout << -i << endl;
 	return 0;
 
 }

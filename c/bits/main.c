@@ -38,11 +38,9 @@ void prog1(){
 }
 
 void prog2(){
-    int x = 0;
+    int x = 0xFFFF0000;
     print_radices(x);
-    int mask = 0b101;
-    x |= mask << 22;
-    print_radices(x);
+    print_radices(x / 4);
 }
 
 int main() {
