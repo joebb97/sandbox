@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 import random
 import time
@@ -17,6 +18,7 @@ def heap_sort2(alist):
         heapq.heappush(temp, item)
 
     alist[:] = [heapq.heappop(temp) for i in range(len(temp))]
+
 
 def merge(right, left):
     ret = []
@@ -128,6 +130,7 @@ def insertion_sort(alist):
             if alist[j] < alist[j - 1]:
                 alist[j - 1], alist[j] = alist[j], alist[j - 1]
 
+
 def selection_sort(alist):
     for i in range(0, len(alist)):
         smallest_pos = i
@@ -136,11 +139,13 @@ def selection_sort(alist):
                 smallest_pos = j
         alist[i], alist[smallest_pos] = alist[smallest_pos], alist[i]
 
+
 def check_sorted(alist):
     for i in range(0, len(alist) - 1):
         if alist[i] > alist[i + 1]:
             return False
     return True
+
 
 def time_sort(orig, sort):
     alist = list(orig)
@@ -155,6 +160,7 @@ def time_sort(orig, sort):
         return
     print str(sort) + " took: " +  str(end - start) + " seconds"
 
+
 def main():
     orig = []
     for i in range(10 ** 6):
@@ -166,7 +172,6 @@ def main():
     random.shuffle(holder[1])
     for sort in holder[1]:
         time_sort(orig, sort)
-
 
 
 if __name__ == '__main__':
