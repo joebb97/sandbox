@@ -21,3 +21,4 @@ java/.project
 python/deepfield/
 go/bin/
 go/pkg/
+compile_commands.json
