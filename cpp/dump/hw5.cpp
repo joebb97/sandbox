@@ -1,23 +1,3 @@
-//
-//  main.cpp
-//  deeznuts
-//
-//  Created by Joey Buiteweg on 2/24/16.
-//  Copyright © 2016 Joey Buiteweg. All rights reserved.
-//
-
-//#include <iostream>
-//using namespace std;
-//
-//
-//int main(int argc, const char * argv[]) {
-//    string what;
-//    cout << "man nigga fuck yo couch" << endl;
-//    getline(cin, what);
-//    cout << "deez " << what << " on your chin \n";
-//    cout << argv;
-//}
-
 #include <iostream>
 #include <string>
 #include <vector>
