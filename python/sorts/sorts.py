@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-import sys
 import random
 import time
 import heapq
-import copy
+import sys
+
 
 def heap_sort(alist):
     temp = []
@@ -11,6 +11,7 @@ def heap_sort(alist):
     while alist:
         temp.append(heapq.heappop(alist))
     alist[:] = temp
+
 
 def heap_sort2(alist):
     temp = []
@@ -42,28 +43,30 @@ def merge(right, left):
 
     return ret
 
+
 def quick_sort(alist):
-   quickSortHelper(alist,0,len(alist)-1)
-
-def quickSortHelper(alist,first,last):
-   if first<last:
-
-       splitpoint = partition(alist,first,last)
-
-       quickSortHelper(alist,first,splitpoint-1)
-       quickSortHelper(alist,splitpoint+1,last)
+    quickSortHelper(alist, 0, len(alist)-1)
 
 
-def partition(alist,first,last):
-   pivotvalue = alist[first]
+def quickSortHelper(alist, first, last):
+    if first < last:
+        splitpoint = partition(alist, first, last)
 
-   leftmark = first+1
-   rightmark = last
+        quickSortHelper(alist, first, splitpoint-1)
+        quickSortHelper(alist, splitpoint+1, last)
 
-   done = False
-   while not done:
-       while leftmark <= rightmark and alist[leftmark] <= pivotvalue:
-           leftmark = leftmark + 1
+
+def partition(alist, first, last):
+    pivotvalue = alist[first]
+
+    leftmark = first+1
+    rightmark = last
+
+    done = False
+    while not done:
+        while leftmark <= rightmark and alist[leftmark] <= pivotvalue:
+            leftmark = leftmark + 1
+
 
 def merge_sort(alist):
     if len(alist) == 1:
@@ -75,8 +78,9 @@ def merge_sort(alist):
     right = merge_sort(right)
     return merge(left, right)
 
+
 def merge_sort2(alist):
-    if len(alist)>1:
+    if len(alist) > 1:
         mid = len(alist)//2
         lefthalf = alist[:mid]
         righthalf = alist[mid:]
@@ -84,20 +88,21 @@ def merge_sort2(alist):
         merge_sort2(lefthalf)
         merge_sort2(righthalf)
 
-        i=0
-        j=0
-        k=0
+        i = 0
+        j = 0
+        k = 0
         while i < len(lefthalf) and j < len(righthalf):
             if lefthalf[i] < righthalf[j]:
-                alist[k]=lefthalf[i]
-                i=i+1
+                alist[k] = lefthalf[i]
+                i = i+1
             else:
-                alist[k]=righthalf[j]
-                j=j+1
-            k=k+1
+                alist[k] = righthalf[j]
+                j = j+1
+            k = k+1
 
         while i < len(lefthalf):
-            alist[k]=lefthalf[i]
+            alist[k] = lefthalf[i]
+
 
 def bozo_sort(alist):
     while not check_sorted(alist):
@@ -158,7 +163,7 @@ def time_sort(orig, sort):
     if not check_sorted(alist):
         print str(sort) + "failed!!!"
         return
-    print str(sort) + " took: " +  str(end - start) + " seconds"
+    print str(sort) + " took: " + str(end - start) + " seconds"
 
 
 def main():
