@@ -1,0 +1,7 @@
+-std=c++14
+-Wconversion
+-Wall
+-Wextra
+-pedantic
+-O3
+-DNDEBUG
