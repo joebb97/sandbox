@@ -86,7 +86,7 @@ class ForwardList:
                 back = middle.next
         self.__head = front
 
-    
+
     def clear(self):
         while self.__head:
             next = self.__head.next

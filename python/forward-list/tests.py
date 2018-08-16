@@ -3,7 +3,7 @@ import unittest
 from ForwardList import ForwardList
 
 class TestForwardList(unittest.TestCase):
-    
+
     def setUp(self):
         self.flist = ForwardList()
 
