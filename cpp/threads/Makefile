@@ -1,9 +1,12 @@
 CXX=g++
-CXXFLAGS=-std=c++14 -Wconversion -Wall -Wextra -pedantic #took out -Werror
+CXXFLAGS=-std=c++14 -Wconversion -Wall -Wextra -pedantic -I./include #took out -Werror
+LDFLAGS=-lpthread
 SOURCES=$(wildcard src/*.cpp)
 temp=$(SOURCES:%.cpp=%.o)
 OBJS=$(addprefix obj/, $(notdir $(temp)))
 EXEC=bin/threads
+
+all: $(EXEC)
 
 release: CXXFLAGS += -O3 -DNDEBUG
 release: clean all
@@ -15,14 +18,8 @@ profile: CXXFLAGS += -pg
 profile: clean all
 
 
-all: $(EXEC)
-
-
 $(EXEC): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $@
-
-$(EXECD): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $@
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $@ $(LDFLAGS)
 
 obj/%.o: src/%.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@ 
