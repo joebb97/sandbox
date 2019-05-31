@@ -22,3 +22,7 @@ python/deepfield/
 go/bin/
 go/pkg/
 compile_commands.json
+CMakeCache.txt
+build
+CMakeFiles
+cmake_install.cmake
