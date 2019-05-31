@@ -5,8 +5,10 @@ class Node:
         self.datum = datum
         self.next = next
 
+
     def __str__(self):
         return str(self.datum)
+
 
 class ForwardList:
 
