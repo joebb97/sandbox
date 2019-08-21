@@ -21,8 +21,13 @@ java/.project
 python/deepfield/
 go/bin/
 go/pkg/
+go/src/*
+!go/src/hello/
+!go/src/sixtyfive/
 compile_commands.json
 CMakeCache.txt
 build
 CMakeFiles
 cmake_install.cmake
+debug/
+target/

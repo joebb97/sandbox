@@ -1,0 +1,46 @@
+doubleMe x = x + x
+doubleUs x y = (doubleMe x) + (doubleMe y)
+doubleSmallNumber x = if x > 100
+                      then x
+                      else x*2
+integerDiv = 12 `div` 5
+regularDiv = 12 / 5
+conanO'Brien = "It's a-me, Conan O'Brien!"
+combList = [1,2,3,4] ++ [9,10,11,12]
+helloWorld = "hello" ++ " " ++ "world"
+woot = ['w', 'o'] ++ ['o', 't']
+smallCat='A':" SMALL CAT"
+thisIsTrue = [1,2,3] == 1:2:3:[]
+pos2 = combList !! 2
+nestedList = [[1,2,3,4],[5,3,3,3],[1,2,2,3,4],[1,2,3]]
+alsoTrue = [3, 2, 1] > [2, 1, 0]
+theHead = head combList
+theTail = tail combList
+theLast = last combList
+theInit = init combList
+theLength = length combList
+isItEmpty = null combList
+theReverse = reverse combList
+firstThree = take 3 combList
+noFirstThree = drop 3 combList
+theBiggest = maximum combList
+theSmallest = minimum combList
+theSum = sum combList
+theProduct = product combList
+fourInList = 4 `elem` combList
+oneToTwenty = [1..20]
+aToZ = ['a'..'z']
+oneToTwentyStepThree = [1,4..20]
+twentyToOne = [20,19..1]
+woah = [0.1, 0.3..1]
+tenOfInfinity = take 10 [3,5..]
+cyclical = take 10 (cycle [1, 2, 3])
+fives = take 10 (repeat 5)
+alsoFives = replicate 10 5
+listComp = [x * 2 | x <- [1..10]]
+boomBangs xs = [ if x < 10 then "BOOM!" else "BANG!" | x <- xs, odd x]
+output = boomBangs [7..13]
+nouns = ["hobo", "frog", "pope"]
+adjectives = ["lazy", "grouchy", "scheming"]
+phrases = [adjective ++ " " ++ noun | adjective <- adjectives, noun <- nouns]
+length' xs = sum [1 | _ <- xs]
