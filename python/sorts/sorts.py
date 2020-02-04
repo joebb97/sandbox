@@ -1,11 +1,11 @@
-#!/usr/bin/env python
-import random
-import time
+"""My bad implementation of some sorting algorithms."""
 import heapq
-import sys
+import random
+from util import check_sorted
 
 
 def heap_sort(alist):
+    """Heap sort using heapify."""
     temp = []
     heapq.heapify(alist)
     while alist:
@@ -14,6 +14,7 @@ def heap_sort(alist):
 
 
 def heap_sort2(alist):
+    """Heap sort without heapify."""
     temp = []
     for item in alist:
         heapq.heappush(temp, item)
@@ -22,6 +23,7 @@ def heap_sort2(alist):
 
 
 def merge(right, left):
+    """Merge sort (probably copy pasted, don't remember)."""
     ret = []
     right_pos = 0
     left_pos = 0
@@ -44,31 +46,8 @@ def merge(right, left):
     return ret
 
 
-def quick_sort(alist):
-    quickSortHelper(alist, 0, len(alist)-1)
-
-
-def quickSortHelper(alist, first, last):
-    if first < last:
-        splitpoint = partition(alist, first, last)
-
-        quickSortHelper(alist, first, splitpoint-1)
-        quickSortHelper(alist, splitpoint+1, last)
-
-
-def partition(alist, first, last):
-    pivotvalue = alist[first]
-
-    leftmark = first+1
-    rightmark = last
-
-    done = False
-    while not done:
-        while leftmark <= rightmark and alist[leftmark] <= pivotvalue:
-            leftmark = leftmark + 1
-
-
 def merge_sort(alist):
+    """Merge sort implementation (copy pasted I believe)."""
     if len(alist) == 1:
         return alist
     mid = len(alist) // 2
@@ -80,6 +59,7 @@ def merge_sort(alist):
 
 
 def merge_sort2(alist):
+    """Merge sort implementation (copy pasted I believe)."""
     if len(alist) > 1:
         mid = len(alist)//2
         lefthalf = alist[:mid]
@@ -105,6 +85,7 @@ def merge_sort2(alist):
 
 
 def bozo_sort(alist):
+    """Hilariously bad bozo_sort."""
     while not check_sorted(alist):
         pos_one = random.randint(0, len(alist) - 1)
         pos_two = random.randint(0, len(alist) - 1)
@@ -143,41 +124,3 @@ def selection_sort(alist):
             if alist[j] < alist[smallest_pos]:
                 smallest_pos = j
         alist[i], alist[smallest_pos] = alist[smallest_pos], alist[i]
-
-
-def check_sorted(alist):
-    for i in range(0, len(alist) - 1):
-        if alist[i] > alist[i + 1]:
-            return False
-    return True
-
-
-def time_sort(orig, sort):
-    alist = list(orig)
-    start = time.time()
-    if sort == merge_sort:
-        alist = sort(alist)
-    else:
-        sort(alist)
-    end = time.time()
-    if not check_sorted(alist):
-        print str(sort) + "failed!!!"
-        return
-    print str(sort) + " took: " + str(end - start) + " seconds"
-
-
-def main():
-    orig = []
-    for i in range(10 ** 6):
-        orig.append(random.randint(0, 10 ** 6))
-    elem_sorts = [insertion_sort, bubble_sort, selection_sort]
-    adv_sorts = [merge_sort, list.sort, heap_sort, heap_sort2]
-    bad_sorts = [bozo_sort, bogo_sort]
-    holder = [elem_sorts, adv_sorts, bad_sorts]
-    random.shuffle(holder[1])
-    for sort in holder[1]:
-        time_sort(orig, sort)
-
-
-if __name__ == '__main__':
-    main()
