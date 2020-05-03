@@ -1,4 +1,5 @@
 #include "bits.h"
+#include <stdio.h>
 
 void prog1(){
     int x, y, shift;

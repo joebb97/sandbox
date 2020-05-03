@@ -1,8 +1,6 @@
 #ifndef BITS_C
 #define BITS_C
 
-#include <stdio.h>
-
 void display_in_bin(unsigned n);
 
 void print_radices(int n);

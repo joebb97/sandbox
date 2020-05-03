@@ -11,6 +11,7 @@
 *.o
 *.out
 *.pyc
+*.dSYM/
 cpp/sorts/.idea/
 cpp/sorts/cmake-build-debug/
 java/cryptography_compression/bin/
