@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include <string>
 using namespace std;
 
@@ -159,20 +160,29 @@ int main(int argc, char** argv)
 	// cout << z << endl;
     //int i = 40;
     //cout << -i << endl;
-    string full_pn = "/home";
-    string cur_pn = "/";
-    size_t slash_idx = 0, dist = 0;
-    size_t new_slash_idx = string::npos;
-    bool last_slash = false;
-    do {
-        new_slash_idx = full_pn.find("/", slash_idx + 1);
-        last_slash = new_slash_idx == string::npos;
-        dist = last_slash ? full_pn.size() - (slash_idx + 1):
-            new_slash_idx - (slash_idx + 1);
-        string cur_name = full_pn.substr(slash_idx, dist);
-        cur_pn.append(cur_name);
-        slash_idx = new_slash_idx;
-    } while (slash_idx != string::npos);
+    
+    /* string full_pn = "/home"; */
+    /* string cur_pn = "/"; */
+    /* size_t slash_idx = 0, dist = 0; */
+    /* size_t new_slash_idx = string::npos; */
+    /* bool last_slash = false; */
+    /* do { */
+    /*     new_slash_idx = full_pn.find("/", slash_idx + 1); */
+    /*     last_slash = new_slash_idx == string::npos; */
+    /*     dist = last_slash ? full_pn.size() - (slash_idx + 1): */
+    /*         new_slash_idx - (slash_idx + 1); */
+    /*     string cur_name = full_pn.substr(slash_idx, dist); */
+    /*     cur_pn.append(cur_name); */
+    /*     slash_idx = new_slash_idx; */
+    /* } while (slash_idx != string::npos); */
+
+    auto vec = std::vector<std::string>();
+    vec.reserve(2);
+    vec.emplace_back("hello");
+    auto& str = vec[0];
+    std::cout << str << "\n";
+    vec.emplace_back("lol");
+    std::cout << str << "\n";
 	return 0;
 
 }
