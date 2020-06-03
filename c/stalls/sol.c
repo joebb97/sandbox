@@ -35,31 +35,45 @@ int main(int argc, char **argv) {
   const long line_size = 1000;
   char line[max_arr_size];
 
+  // ASSUME AN EVIL PERSON WANTS TO BE EVIL AND CONTROL THE PROGRAM.
   // Get the input array size
   printf("N: ");
   if (fgets(line, line_size, stdin) == NULL) {
     err_wrap("fgets failed");
   }
   arr_len = strtol(line, NULL, 0);
-  // Make sure the array size isn't bogus
+  // Make sure the array size isn't bogus so we don't get overflowed
   if (arr_len <= 0 || arr_len > max_arr_size) {
     err_wrap("Array size <= 0 or >= ARR_SIZE");
   }
   DEBUG_PRINT(("Array will be size: %ld\n", arr_len));
   // Put this on the heap since we don't really know how big it should be
+  printf("Stalls: ");
   int *stalls = (int *)calloc(arr_len, sizeof(int));
   init_stalls(stalls, arr_len, line, line_size);
   free(stalls);
 }
 
 /*
- * Calculate the MAX D after adding two cows to the stalls
- * Example:
- * N: 14
- * 1 0 0 0 1 0 0 1 0 0 0 0 1 0
- * D: 2
+ * Function: calculate_social_distance
+ * ------------------------------------
  *
- * Example:
+ *  Calculate the MAX D after adding two cows to the stalls
+ *
+ *  A 1 denotes a cow occupies a stall, a 0 denotes the stall is empty
+ *
+ *  Example 1:
+ *  ---------
+ *  N: 14
+ *  1 0 0 0 1 0 0 1 0 0 0 0 1 0
+ *  D: 2
+ *  Why? -> 1 0 X 0 0 1 0 0 0 1 0 X 0 0 1 0
+ *  Where X denotes where a cow was added
+ *
+ *  Example 2:
+ *  ---------
  *
  */
-int calculate_social_distance(int *stalls, long stalls_len);
+int calculate_social_distance(int *stalls, long stalls_len) { 
+    return 0;
+}
