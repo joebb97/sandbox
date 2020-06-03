@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import unittest
+
 from ForwardList import ForwardList
+
 
 class TestForwardList(unittest.TestCase):
 
@@ -18,17 +20,16 @@ class TestForwardList(unittest.TestCase):
     def test_size(self):
         self.flist.append(11)
         self.assertEqual(self.flist.get_size(), 1)
-        self.flist.pop_back() 
+        self.flist.pop_back()
         self.assertEqual(self.flist.get_size(), 0)
         self.flist.prepend(30)
         self.assertEqual(self.flist.get_size(), 1)
-        self.flist.pop_front() 
+        self.flist.pop_front()
         self.assertEqual(self.flist.get_size(), 0)
-
 
     def test_append(self):
         self.flist.append(34)
-    
+
     def test_prepend(self):
         self.flist.append(34)
         self.flist.prepend(11)
@@ -46,7 +47,7 @@ class TestForwardList(unittest.TestCase):
         self.assertEqual(str(self.flist), "8")
         self.flist.pop_back()
         self.assertEqual(str(self.flist), "")
-        
+
     def test_pop_front(self):
         self.flist.append(22)
         self.flist.prepend(10)
@@ -68,13 +69,13 @@ class TestForwardList(unittest.TestCase):
         self.flist.append(125)
         self.assertEqual(self.flist.front(), 10)
         self.assertEqual(self.flist.back(), 125)
-    
+
     def test_clear(self):
         for a in range(3):
             self.flist.append(a)
         self.flist.clear()
         self.assertEqual(str(self.flist), "")
-        
+
     def test_reverse(self):
         self.flist.append(1)
         self.assertEqual(str(self.flist), "1")
@@ -86,6 +87,7 @@ class TestForwardList(unittest.TestCase):
             self.flist.append(a)
         self.flist.reverse()
         self.assertEqual(str(self.flist), "2 1 0")
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

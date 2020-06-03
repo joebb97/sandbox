@@ -177,13 +177,18 @@ int main(int argc, char** argv)
     /*     slash_idx = new_slash_idx; */
     /* } while (slash_idx != string::npos); */
 
-    auto vec = std::vector<std::string>();
-    vec.reserve(2);
-    vec.emplace_back("hello");
-    auto& str = vec[0];
-    std::cout << str << "\n";
-    vec.emplace_back("lol");
-    std::cout << str << "\n";
+    /* auto vec = std::vector<std::string>(); */
+    /* vec.reserve(2); */
+    /* vec.emplace_back("hello"); */
+    /* auto& str = vec[0]; */
+    /* std::cout << str << "\n"; */
+    /* vec.emplace_back("lol"); */
+    /* std::cout << str << "\n"; */
+
+    const char * asdf = "12x3\n\txxx";
+    char * next;
+    printf("Value is: %ld\n", strtol(asdf, &next, 10));
+    printf("Next is: %s", next);
 	return 0;
 
 }
