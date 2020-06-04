@@ -25,6 +25,7 @@ go/pkg/
 go/src/*
 !go/src/hello/
 !go/src/sixtyfive/
+!go/src/dump/eecs489p1/
 compile_commands.json
 CMakeCache.txt
 build
