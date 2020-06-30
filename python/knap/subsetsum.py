@@ -2,7 +2,8 @@
 
 
 def subset_sum(items, target_sum):
-    """Do the thing."""
+    """You know the thing
+        -- Joe Biden."""
     # NOTE to anyone playing along at home
     # [[0] * len(items)] * target_sum makes many rows
     # that are all a reference to the same list,

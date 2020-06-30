@@ -10,6 +10,7 @@
   do {                                                                         \
   } while (0)
 #endif
+#include <check.h>
 
 /*
  * INPUT FORMAT
