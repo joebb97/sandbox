@@ -1,0 +1,6 @@
+[package]
+name = "ping_pong"
+version = "0.1.0"
+authors = ["Joseph Buiteweg <joebb@umich.edu>"]
+
+[dependencies]
