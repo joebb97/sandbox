@@ -17,9 +17,9 @@ impl Config {
         "USAGE: assembler INPUT_FILE OUTPUF_FILE [-d|--debug]"
     }
 
-    pub fn new(args: &[String]) -> Result<Config, &str> {
+    pub fn new(args: &[String]) -> Result<Config, Box<dyn Error>> {
         if args.len() < 3  {
-            return Err(Config::usage());
+            Err(Config::usage())?;
         }
         let debug_mode = args.len() == 4 && 
                          ((args[3] == "-d") | (args[3] == "--debug"));
