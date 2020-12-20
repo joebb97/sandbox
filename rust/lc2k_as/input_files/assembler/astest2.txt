@@ -1,0 +1,6 @@
+inf add  3 6 1
+    sw   3 5 -9
+    jalr 6 1 
+    noop
+    beq 7 7 inf
+    halt
