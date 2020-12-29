@@ -27,6 +27,7 @@ go/src/*
 !go/src/hello/
 !go/src/sixtyfive/
 !go/src/dump/eecs489p1/
+!go/src/echo_net/
 !go/src/iperf/
 compile_commands.json
 CMakeCache.txt
@@ -37,3 +38,4 @@ debug/
 target/
 Session.vim
 builddir
+tags.lock
