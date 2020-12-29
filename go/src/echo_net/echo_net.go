@@ -49,8 +49,10 @@ func handleConnection(conn net.Conn) {
 			fmt.Println("Error receiving message from connection\n", err)
 			return
 		}
+		rw.WriteString(msg)
 		msg = strings.Trim(msg, "\n ")
 		fmt.Println(msg)
+		rw.Flush()
 	}
 }
 
@@ -108,6 +110,11 @@ func runClient(flags *Flags) error {
 			return errors.Wrap(err, "Couldn't write message to server")
 		}
 		rw.Flush()
+		msg, err := rw.ReadString('\n')
+		if err != nil {
+			return errors.Wrap(err, "Couldn't read message from server")
+		}
+		fmt.Println(strings.Trim(msg, "\n"))
 	}
 	// return nil
 }
