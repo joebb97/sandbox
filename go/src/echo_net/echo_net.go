@@ -57,6 +57,24 @@ func handleConnection(conn net.Conn, bufSize uint) {
 	}
 }
 
+func handleConnectionUDP(conn *net.UDPConn, bufSize uint) {
+	buf := make([]byte, bufSize)
+	for {
+		size, remoteAddr, err := conn.ReadFromUDP(buf)
+		switch {
+		case err == io.EOF:
+			log.Println("Connection reached EOF, closing.\n ---")
+			return
+		case err != nil:
+			log.Println("Error receiving message from connection\n", err)
+			return
+		}
+		msg := string(buf[:size])
+		log.Println(msg)
+		conn.WriteToUDP(buf[:size], remoteAddr)
+	}
+}
+
 func runServer(flags *Flags) error {
 	bufSize, _ := strconv.Atoi(flags.bufSize)
 	if flags.protoStr == "tcp" {
@@ -87,13 +105,8 @@ func runServer(flags *Flags) error {
 			return errors.Wrapf(err, "Unable to listen on port %s\n", flags.port)
 		}
 		log.Println("Listening on ", listener.LocalAddr().String()+" using udp")
-		buf := make([]byte, bufSize)
-		for {
-			size, remoteAddr, _ := listener.ReadFromUDP(buf)
-			msg := string(buf[:size])
-			log.Println(msg)
-			listener.WriteToUDP(buf[:size], remoteAddr)
-		}
+		handleConnectionUDP(listener, uint(bufSize))
+		return nil
 
 	} else {
 		return errors.New("Unsupported protoStr")
