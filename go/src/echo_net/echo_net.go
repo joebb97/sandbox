@@ -3,28 +3,30 @@ package main
 import (
 	"bufio"
 	"flag"
-	"io"
 	"fmt"
+	"io"
+	"log"
 	"net"
 	"os"
-	"strings"
+	"strconv"
 
 	"github.com/pkg/errors"
 )
 
 // Flags keeps track of the command line arguments
 type Flags struct {
-	addr, port, duration, protoStr string
-	isServer, isClient             bool
+	addr, bufSize, port, duration, protoStr string
+	isServer, isClient                      bool
 }
 
 // Open a connection to address addr, which is of format "<IP address>:port"
-func Open(proto string, addr string) (*bufio.ReadWriter, error) {
+func Open(proto string, addr string) (net.Conn, error) {
+	log.Println("Dialing " + addr + " using " + proto)
 	conn, err := net.Dial(proto, addr)
 	if err != nil {
 		return nil, errors.Wrap(err, "Dialing "+addr+" failed")
 	}
-	return bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn)), nil
+	return conn, nil
 }
 
 // CheckFlags validates the commandline arguments
@@ -36,42 +38,46 @@ func CheckFlags(flags *Flags) error {
 	return nil
 }
 
-func handleConnection(conn net.Conn) {
-	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
+func handleConnection(conn net.Conn, bufSize uint) {
+	buf := make([]byte, bufSize)
 	defer conn.Close()
 	for {
-		msg, err := rw.ReadString('\n')
+		size, err := conn.Read(buf)
 		switch {
 		case err == io.EOF:
-			fmt.Println("Connection reached EOF, closing.\n ---")
+			log.Println("Connection reached EOF, closing.\n ---")
 			return
 		case err != nil:
-			fmt.Println("Error receiving message from connection\n", err)
+			log.Println("Error receiving message from connection\n", err)
 			return
 		}
-		rw.WriteString(msg)
-		msg = strings.Trim(msg, "\n ")
+		msg := string(buf[:size])
 		fmt.Println(msg)
-		rw.Flush()
+		conn.Write(buf[:size])
 	}
 }
 
 func runServer(flags *Flags) error {
+	bufSize, _ := strconv.Atoi(flags.bufSize)
 	if flags.protoStr == "tcp" {
 		listener, err := net.Listen(flags.protoStr, ":"+flags.port)
 		if err != nil {
 			return errors.Wrapf(err, "Unable to listen on port %s\n", flags.port)
 		}
+		log.Println("Listening on", listener.Addr().String()+" using tcp")
 		for {
 			conn, err := listener.Accept()
+			log.Println("Accepted a connection request.")
 			if err != nil {
-				fmt.Println("Failed to accept a connection request:", err)
+				log.Println("Failed to accept a connection request:", err)
 				continue
 			}
-			go handleConnection(conn)
+			go handleConnection(conn, uint(bufSize))
 		}
 		// return nil
 	} else if flags.protoStr == "udp" {
+		// No sense of a connection in UDP, so handle each packet
+		// individually.
 		addr, err := net.ResolveUDPAddr(flags.protoStr, ":"+flags.port)
 		if err != nil {
 			return errors.Wrap(err, "Unable to listen resolve localhost network addr")
@@ -80,41 +86,42 @@ func runServer(flags *Flags) error {
 		if err != nil {
 			return errors.Wrapf(err, "Unable to listen on port %s\n", flags.port)
 		}
-		rw := bufio.NewReadWriter(bufio.NewReader(listener), bufio.NewWriter(listener))
+		log.Println("Listening on ", listener.LocalAddr().String()+" using udp")
+		buf := make([]byte, bufSize)
 		for {
-			msg, _ := rw.ReadString('\n')	
-			msg = strings.Trim(msg, "\n ")
-			fmt.Println(msg)
+			size, remoteAddr, _ := listener.ReadFromUDP(buf)
+			msg := string(buf[:size])
+			log.Println(msg)
+			listener.WriteToUDP(buf[:size], remoteAddr)
 		}
 
 	} else {
 		return errors.New("Unsupported protoStr")
 	}
-	return nil
 }
 
 func runClient(flags *Flags) error {
 	wholeAddr := flags.addr + ":" + flags.port
-	rw, err := Open(flags.protoStr, wholeAddr)
+	conn, err := Open(flags.protoStr, wholeAddr)
 	if err != nil {
 		return errors.Wrap(err, "Client: Failed to open connection to "+wholeAddr)
 	}
 	stdinReader := bufio.NewReader(os.Stdin)
+	bufSize, _ := strconv.Atoi(flags.bufSize)
+	buf := make([]byte, uint(bufSize))
 	for {
 		text, stdinErr := stdinReader.ReadString('\n')
 		if stdinErr != nil {
 			return errors.Wrap(stdinErr, "Couldn't read from stdin")
 		}
-		_, err := rw.WriteString(text)
+		text = text[:len(text)-1]
+		_, err := conn.Write([]byte(text))
 		if err != nil {
 			return errors.Wrap(err, "Couldn't write message to server")
 		}
-		rw.Flush()
-		msg, err := rw.ReadString('\n')
-		if err != nil {
-			return errors.Wrap(err, "Couldn't read message from server")
-		}
-		fmt.Println(strings.Trim(msg, "\n"))
+		replySize, err := conn.Read(buf)
+		// Don't print the newline
+		fmt.Println(string(buf[:replySize]))
 	}
 	// return nil
 }
@@ -125,6 +132,7 @@ func main() {
 	flag.StringVar(&flags.protoStr, "proto", "tcp", "Transport layer protocol to use")
 	flag.StringVar(&flags.port, "port", "5001", "Port to listen on or connect to")
 	flag.StringVar(&flags.addr, "a", "localhost", "Address or hostname of server to connect to.")
+	flag.StringVar(&flags.bufSize, "b", "1024", "Size of buffer to use.")
 	flag.StringVar(&flags.duration, "t", "10", "Duration to run client for")
 	flag.BoolVar(&flags.isServer, "s", false, "Whether this iperf is a server")
 	flag.BoolVar(&flags.isClient, "c", false, "Whether this iperf is a client")
@@ -132,19 +140,19 @@ func main() {
 	flag.Parse()
 	err := CheckFlags(&flags)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		flag.Usage()
 		os.Exit(1)
 	}
 	if flags.isServer {
 		err := runServer(&flags)
 		if err != nil {
-			fmt.Println("Error:", errors.WithStack(err))
+			log.Println("Error:", errors.WithStack(err))
 		}
 	} else {
 		err := runClient(&flags)
 		if err != nil {
-			fmt.Println("Error:", errors.WithStack(err))
+			log.Println("Error:", errors.WithStack(err))
 		}
 	}
 }
