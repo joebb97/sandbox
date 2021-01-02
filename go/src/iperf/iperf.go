@@ -1,17 +1,21 @@
 package main
 
 import (
-	"bufio"
+	"bytes"
 	"flag"
+	"fmt"
 	"io"
-	"log"
+	"math"
 	"net"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 )
+
+const endbyte byte = 'E'
 
 // Flags keeps track of the command line arguments
 type Flags struct {
@@ -21,7 +25,7 @@ type Flags struct {
 
 // Open a connection to address addr, which is of format "<IP address>:port"
 func Open(proto string, addr string) (net.Conn, error) {
-	log.Println("Dialing " + addr + " using " + proto)
+	fmt.Println("Dialing " + addr + " using " + strings.ToUpper(proto))
 	conn, err := net.Dial(proto, addr)
 	if err != nil {
 		return nil, errors.Wrap(err, "Dialing "+addr+" failed")
@@ -38,41 +42,66 @@ func CheckFlags(flags *Flags) error {
 	return nil
 }
 
-func handleConnection(conn net.Conn, bufSize uint) {
+func handleConnection(conn net.Conn, bufSize uint, protoStr string) {
 	buf := make([]byte, bufSize)
-	defer conn.Close()
+	if protoStr == "tcp" {
+		defer conn.Close()
+	}
+	var remoteAddr *net.UDPAddr
+	totalRecvd := 0
+	startTime := time.Now()
+	var size int
+	var err error
 	for {
-		size, err := conn.Read(buf)
+		if remoteAddr == nil && protoStr == "udp" {
+			size, remoteAddr, err = conn.(*net.UDPConn).ReadFromUDP(buf)
+			startTime = time.Now()
+		} else {
+			size, err = conn.Read(buf)
+		}
 		switch {
 		case err == io.EOF:
-			log.Println("Connection reached EOF, closing.\n ---")
+			fmt.Println("Connection reached EOF, closing.\n ---")
 			return
 		case err != nil:
-			log.Println("Error receiving message from connection\n", err)
+			fmt.Println("Error receiving message from connection\n", err)
 			return
 		}
-		msg := string(buf[:size])
-		msg = strings.Trim(msg, "\n")
-		log.Println(msg)
+		totalRecvd += size
+		if buf[size-1] == endbyte {
+			break
+		}
 	}
+	duration := time.Since(startTime).Seconds()
+	var addr interface{}
+	if protoStr == "udp" {
+		addr = remoteAddr
+	} else {
+		addr = conn.RemoteAddr()
+	}
+	kiloBytes := int(float64(totalRecvd) / math.Pow10(3))
+	megaBitsPerSecond := (float64(totalRecvd) * 8.0 / math.Pow10(6)) / duration
+	fmt.Printf("Received %+v KB in %+v seconds (rate=%.3f Mbps) from %+v\n",
+		kiloBytes, duration, megaBitsPerSecond, addr)
 }
 
 func runServer(flags *Flags) error {
 	bufSize, _ := strconv.Atoi(flags.bufSize)
+	toUpper := strings.ToUpper(flags.protoStr)
 	if flags.protoStr == "tcp" {
 		listener, err := net.Listen(flags.protoStr, ":"+flags.port)
 		if err != nil {
 			return errors.Wrapf(err, "Unable to listen on port %s\n", flags.port)
 		}
-		log.Println("Listening on", listener.Addr().String()+" using tcp")
+		fmt.Printf("Listening on %+v using %+v\n", listener.Addr().String(), toUpper)
 		for {
 			conn, err := listener.Accept()
-			log.Println("Accepted a connection request.")
+			// fmt.Println("Accepted a connection request.")
 			if err != nil {
-				log.Println("Failed to accept a connection request:", err)
+				fmt.Println("Failed to accept a connection request:", err)
 				continue
 			}
-			go handleConnection(conn, uint(bufSize))
+			go handleConnection(conn, uint(bufSize), flags.protoStr)
 		}
 		// return nil
 	} else if flags.protoStr == "udp" {
@@ -82,17 +111,13 @@ func runServer(flags *Flags) error {
 		if err != nil {
 			return errors.Wrap(err, "Unable to listen resolve localhost network addr")
 		}
-		listener, err := net.ListenUDP(flags.protoStr, addr)
+		conn, err := net.ListenUDP(flags.protoStr, addr)
 		if err != nil {
 			return errors.Wrapf(err, "Unable to listen on port %s\n", flags.port)
 		}
-		log.Println("Listening on ", listener.LocalAddr().String()+" using udp")
-		buf := make([]byte, bufSize)
+		fmt.Printf("Listening on %+v using %+v\n", conn.LocalAddr().String(), toUpper)
 		for {
-			size, _ := listener.Read(buf)
-			msg := string(buf[:size])
-			msg = strings.Trim(msg, "\n")
-			log.Println(msg)
+			handleConnection(conn, uint(bufSize), flags.protoStr)
 		}
 
 	} else {
@@ -104,20 +129,48 @@ func runClient(flags *Flags) error {
 	wholeAddr := flags.addr + ":" + flags.port
 	conn, err := Open(flags.protoStr, wholeAddr)
 	if err != nil {
-		return errors.Wrap(err, "Client: Failed to open connection to "+wholeAddr)
+		return err
 	}
-	stdinReader := bufio.NewReader(os.Stdin)
-	for {
-		text, stdinErr := stdinReader.ReadString('\n')
-		if stdinErr != nil {
-			return errors.Wrap(stdinErr, "Couldn't read from stdin")
-		}
-		_, err := conn.Write([]byte(text))
+	defer conn.Close()
+	bufSize, _ := strconv.Atoi(flags.bufSize)
+	buf := bytes.Repeat([]byte{0}, bufSize)
+	totalSent := 0
+
+	duration, _ := strconv.Atoi(flags.duration)
+	endTime := time.Now().Add(time.Second * time.Duration(duration))
+	for time.Now().Before(endTime) {
+		bytesSent, err := conn.Write(buf)
 		if err != nil {
 			return errors.Wrap(err, "Couldn't write message to server")
 		}
+		totalSent += bytesSent
 	}
-	// return nil
+	buf[0] = endbyte
+	if flags.protoStr == "tcp" {
+		_, err = conn.Write(buf[:1])
+		if err != nil {
+			return errors.Wrap(err, "Couldn't write message to server")
+		}
+	} else if flags.protoStr == "udp" {
+		_, err = conn.Write(buf[:1])
+		if err != nil {
+			return errors.Wrap(err, "Couldn't write message to server")
+		}
+		// TODO: Do more sophisticated connection closing
+		// The ending packet that was just sent isn't guaranteed to make it
+		// to the server
+
+		// Server should only send back one byte END message
+		// recvBuf := []byte{0}
+		// for recvBuf[0] != endbyte {
+		// 	_, err = conn.Read(recvBuf)
+		// 	if err != nil {
+		// 		return errors.Wrap(err, "Couldn't write message to server")
+		// 	}
+		// }
+
+	}
+	return nil
 }
 
 // Following tutorial from here: https://appliedgo.net/networking/
@@ -134,19 +187,19 @@ func main() {
 	flag.Parse()
 	err := CheckFlags(&flags)
 	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 		flag.Usage()
 		os.Exit(1)
 	}
 	if flags.isServer {
 		err := runServer(&flags)
 		if err != nil {
-			log.Println("Error:", errors.WithStack(err))
+			fmt.Println("Error:", errors.WithStack(err))
 		}
 	} else {
 		err := runClient(&flags)
 		if err != nil {
-			log.Println("Error:", errors.WithStack(err))
+			fmt.Println("Error:", errors.WithStack(err))
 		}
 	}
 }
