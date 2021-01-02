@@ -179,7 +179,7 @@ func main() {
 	flag.StringVar(&flags.protoStr, "proto", "tcp", "Transport layer protocol to use")
 	flag.StringVar(&flags.port, "port", "5001", "Port to listen on or connect to")
 	flag.StringVar(&flags.addr, "a", "localhost", "Address or hostname of server to connect to.")
-	flag.StringVar(&flags.bufSize, "b", "1024", "Size of buffer to use.")
+	flag.StringVar(&flags.bufSize, "b", "1470", "Size of buffer to use.")
 	flag.StringVar(&flags.duration, "t", "10", "Duration to run client for")
 	flag.BoolVar(&flags.isServer, "s", false, "Whether this iperf is a server")
 	flag.BoolVar(&flags.isClient, "c", false, "Whether this iperf is a client")
