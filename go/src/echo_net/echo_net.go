@@ -70,7 +70,7 @@ func handleConnectionUDP(conn *net.UDPConn, bufSize uint) {
 			return
 		}
 		msg := string(buf[:size])
-		log.Println(msg)
+		fmt.Println(msg)
 		conn.WriteToUDP(buf[:size], remoteAddr)
 	}
 }
@@ -147,8 +147,8 @@ func main() {
 	flag.StringVar(&flags.addr, "a", "localhost", "Address or hostname of server to connect to.")
 	flag.StringVar(&flags.bufSize, "b", "1024", "Size of buffer to use.")
 	flag.StringVar(&flags.duration, "t", "10", "Duration to run client for")
-	flag.BoolVar(&flags.isServer, "s", false, "Whether this iperf is a server")
-	flag.BoolVar(&flags.isClient, "c", false, "Whether this iperf is a client")
+	flag.BoolVar(&flags.isServer, "s", false, "Whether this is an echo server")
+	flag.BoolVar(&flags.isClient, "c", false, "Whether this is an echo client")
 
 	flag.Parse()
 	err := CheckFlags(&flags)
