@@ -185,21 +185,19 @@ func main() {
 	flag.BoolVar(&flags.isClient, "c", false, "Whether this iperf is a client")
 
 	flag.Parse()
-	err := CheckFlags(&flags)
+	var err error
+	err = CheckFlags(&flags)
 	if err != nil {
 		fmt.Println(err)
 		flag.Usage()
 		os.Exit(1)
 	}
 	if flags.isServer {
-		err := runServer(&flags)
-		if err != nil {
-			fmt.Println("Error:", errors.WithStack(err))
-		}
+		err = runServer(&flags)
 	} else {
-		err := runClient(&flags)
-		if err != nil {
-			fmt.Println("Error:", errors.WithStack(err))
-		}
+		err = runClient(&flags)
+	}
+	if err != nil {
+		fmt.Println("Error:", errors.WithStack(err))
 	}
 }
