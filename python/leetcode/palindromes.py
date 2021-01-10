@@ -14,6 +14,7 @@ def is_palindrome(s):
         high -= 1
     return True
 
+
 def is_palindrome_alpha(s):
     low, high = 0, len(s) - 1
     while low < high:
@@ -29,13 +30,15 @@ def is_palindrome_alpha(s):
 
     return True
 
+
 def is_palindrome_for(s):
     # return s == s[::-1]
     if not s:
         return False
 
     for i in range(0, len(s) // 2):
-        back = len(s) - 1 - i
+        # back = len(s) - 1 - i
+        back = ~i
 
         if s[i] != s[back]:
             return False
