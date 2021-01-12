@@ -4,7 +4,7 @@ import Array exposing (Array)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import Html.Events exposing (onClick, onInput)
 
 
 
@@ -12,7 +12,7 @@ import Html.Events exposing (onClick)
 
 
 type alias Tile =
-    { value : Maybe Int, rowID : Int, colID : Int, possibleVals : Array Int }
+    { value : String, rowID : Int, colID : Int, possibleVals : Array Int }
 
 
 type alias Board =
@@ -21,6 +21,10 @@ type alias Board =
 
 type alias Model =
     { board : Board }
+
+
+type alias UpdateBoardMsg =
+    { rowID : Int, colID : Int, newValue : String }
 
 
 rowSize =
@@ -34,10 +38,13 @@ main =
 init : Model
 init =
     let
+        initVals =
+            Array.fromList (List.range 1 9)
+
         rows =
             Array.repeat rowSize <|
                 Array.map
-                    (\val -> { colID = val, rowID = -1, value = Nothing, possibleVals = Array.empty })
+                    (\val -> { colID = val, rowID = -1, value = "", possibleVals = initVals })
                 <|
                     Array.fromList (List.range 0 8)
 
@@ -47,48 +54,57 @@ init =
     { board = new_rows }
 
 
-type alias UpdateBoardMsg =
-    { rowID : Int, colID : Int, newValue : Int }
-
-
 type Msg
     = UpdateBoard UpdateBoardMsg
 
 
 default_tile : Tile
 default_tile =
-    { value = Nothing, rowID = -1, colID = -1, possibleVals = Array.empty }
+    { value = "", rowID = -1, colID = -1, possibleVals = Array.empty }
 
 
-update : Msg -> Model -> Model
+applyUpdate : UpdateBoardMsg -> Board -> Board
+applyUpdate recMsg board =
+    let
+        the_row =
+            Maybe.withDefault Array.empty <| Array.get recMsg.rowID board
+
+        the_rec =
+            Maybe.withDefault default_tile <| Array.get recMsg.colID the_row
+
+        output =
+            Array.set recMsg.colID { the_rec | value = recMsg.newValue } the_row
+    in
+    Array.set recMsg.rowID output board
+
+
+update: Msg -> Model -> Model
 update msg model =
+    let
+        _ = Debug.log "msg" <| Debug.toString msg
+    in
     case msg of
         UpdateBoard recMsg ->
-            let
-                the_row =
-                    Maybe.withDefault Array.empty <| Array.get recMsg.rowID model.board
+            case String.toInt recMsg.newValue of
+                Just value ->
+                    if value >= 1 && value <= 9 then
+                        { board = applyUpdate recMsg model.board }
+                    else
+                        {board = model.board}
 
-                the_rec =
-                    Maybe.withDefault default_tile <| Array.get recMsg.colID the_row
+                Nothing -> 
+                    { board = applyUpdate recMsg model.board }
 
-                output =
-                    Array.set recMsg.colID { the_rec | value = Just recMsg.newValue } the_row
-            in
-            { board = Array.set recMsg.rowID output model.board }
 
 
 tileToInput : Tile -> Html Msg
 tileToInput tile =
     let
-        actualVal =
-            case tile.value of
-                Just value ->
-                    String.fromInt value
-
-                Nothing ->
-                    ""
+        boardMsg =
+            { rowID = tile.rowID, colID = tile.colID, newValue = tile.value }
+        helper input = UpdateBoard { boardMsg | newValue = input}
     in
-    td [] [ input [ type_ "text", value actualVal ] [] ]
+    td [] [ input [ type_ "text", value tile.value, onInput helper ] [] ]
 
 
 rowToTr : Array Tile -> Html Msg

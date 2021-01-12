@@ -80,83 +80,154 @@ function A9(fun, a, b, c, d, e, f, g, h, i) {
 console.warn('Compiled in DEV mode. Follow the advice at https://elm-lang.org/0.19.1/optimize for better performance and smaller assets.');
 
 
-var _List_Nil_UNUSED = { $: 0 };
-var _List_Nil = { $: '[]' };
+var _JsArray_empty = [];
 
-function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
-function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
-
-
-var _List_cons = F2(_List_Cons);
-
-function _List_fromArray(arr)
+function _JsArray_singleton(value)
 {
-	var out = _List_Nil;
-	for (var i = arr.length; i--; )
-	{
-		out = _List_Cons(arr[i], out);
-	}
-	return out;
+    return [value];
 }
 
-function _List_toArray(xs)
+function _JsArray_length(array)
 {
-	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
-	{
-		out.push(xs.a);
-	}
-	return out;
+    return array.length;
 }
 
-var _List_map2 = F3(function(f, xs, ys)
+var _JsArray_initialize = F3(function(size, offset, func)
 {
-	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
-	{
-		arr.push(A2(f, xs.a, ys.a));
-	}
-	return _List_fromArray(arr);
+    var result = new Array(size);
+
+    for (var i = 0; i < size; i++)
+    {
+        result[i] = func(offset + i);
+    }
+
+    return result;
 });
 
-var _List_map3 = F4(function(f, xs, ys, zs)
+var _JsArray_initializeFromList = F2(function (max, ls)
 {
-	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A3(f, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
+    var result = new Array(max);
+
+    for (var i = 0; i < max && ls.b; i++)
+    {
+        result[i] = ls.a;
+        ls = ls.b;
+    }
+
+    result.length = i;
+    return _Utils_Tuple2(result, ls);
 });
 
-var _List_map4 = F5(function(f, ws, xs, ys, zs)
+var _JsArray_unsafeGet = F2(function(index, array)
 {
-	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
+    return array[index];
 });
 
-var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
+var _JsArray_unsafeSet = F3(function(index, value, array)
 {
-	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
-	{
-		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
-	}
-	return _List_fromArray(arr);
+    var length = array.length;
+    var result = new Array(length);
+
+    for (var i = 0; i < length; i++)
+    {
+        result[i] = array[i];
+    }
+
+    result[index] = value;
+    return result;
 });
 
-var _List_sortBy = F2(function(f, xs)
+var _JsArray_push = F2(function(value, array)
 {
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		return _Utils_cmp(f(a), f(b));
-	}));
+    var length = array.length;
+    var result = new Array(length + 1);
+
+    for (var i = 0; i < length; i++)
+    {
+        result[i] = array[i];
+    }
+
+    result[length] = value;
+    return result;
 });
 
-var _List_sortWith = F2(function(f, xs)
+var _JsArray_foldl = F3(function(func, acc, array)
 {
-	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
-		var ord = A2(f, a, b);
-		return ord === $elm$core$Basics$EQ ? 0 : ord === $elm$core$Basics$LT ? -1 : 1;
-	}));
+    var length = array.length;
+
+    for (var i = 0; i < length; i++)
+    {
+        acc = A2(func, array[i], acc);
+    }
+
+    return acc;
+});
+
+var _JsArray_foldr = F3(function(func, acc, array)
+{
+    for (var i = array.length - 1; i >= 0; i--)
+    {
+        acc = A2(func, array[i], acc);
+    }
+
+    return acc;
+});
+
+var _JsArray_map = F2(function(func, array)
+{
+    var length = array.length;
+    var result = new Array(length);
+
+    for (var i = 0; i < length; i++)
+    {
+        result[i] = func(array[i]);
+    }
+
+    return result;
+});
+
+var _JsArray_indexedMap = F3(function(func, offset, array)
+{
+    var length = array.length;
+    var result = new Array(length);
+
+    for (var i = 0; i < length; i++)
+    {
+        result[i] = A2(func, offset + i, array[i]);
+    }
+
+    return result;
+});
+
+var _JsArray_slice = F3(function(from, to, array)
+{
+    return array.slice(from, to);
+});
+
+var _JsArray_appendN = F3(function(n, dest, source)
+{
+    var destLen = dest.length;
+    var itemsToCopy = n - destLen;
+
+    if (itemsToCopy > source.length)
+    {
+        itemsToCopy = source.length;
+    }
+
+    var size = destLen + itemsToCopy;
+    var result = new Array(size);
+
+    for (var i = 0; i < destLen; i++)
+    {
+        result[i] = dest[i];
+    }
+
+    for (var i = 0; i < itemsToCopy; i++)
+    {
+        result[i + destLen] = source[i];
+    }
+
+    return result;
 });
 
 
@@ -641,154 +712,83 @@ function _Utils_ap(xs, ys)
 
 
 
-var _JsArray_empty = [];
+var _List_Nil_UNUSED = { $: 0 };
+var _List_Nil = { $: '[]' };
 
-function _JsArray_singleton(value)
+function _List_Cons_UNUSED(hd, tl) { return { $: 1, a: hd, b: tl }; }
+function _List_Cons(hd, tl) { return { $: '::', a: hd, b: tl }; }
+
+
+var _List_cons = F2(_List_Cons);
+
+function _List_fromArray(arr)
 {
-    return [value];
+	var out = _List_Nil;
+	for (var i = arr.length; i--; )
+	{
+		out = _List_Cons(arr[i], out);
+	}
+	return out;
 }
 
-function _JsArray_length(array)
+function _List_toArray(xs)
 {
-    return array.length;
+	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		out.push(xs.a);
+	}
+	return out;
 }
 
-var _JsArray_initialize = F3(function(size, offset, func)
+var _List_map2 = F3(function(f, xs, ys)
 {
-    var result = new Array(size);
-
-    for (var i = 0; i < size; i++)
-    {
-        result[i] = func(offset + i);
-    }
-
-    return result;
+	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
+	{
+		arr.push(A2(f, xs.a, ys.a));
+	}
+	return _List_fromArray(arr);
 });
 
-var _JsArray_initializeFromList = F2(function (max, ls)
+var _List_map3 = F4(function(f, xs, ys, zs)
 {
-    var result = new Array(max);
-
-    for (var i = 0; i < max && ls.b; i++)
-    {
-        result[i] = ls.a;
-        ls = ls.b;
-    }
-
-    result.length = i;
-    return _Utils_Tuple2(result, ls);
+	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A3(f, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
 });
 
-var _JsArray_unsafeGet = F2(function(index, array)
+var _List_map4 = F5(function(f, ws, xs, ys, zs)
 {
-    return array[index];
+	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
 });
 
-var _JsArray_unsafeSet = F3(function(index, value, array)
+var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
 {
-    var length = array.length;
-    var result = new Array(length);
-
-    for (var i = 0; i < length; i++)
-    {
-        result[i] = array[i];
-    }
-
-    result[index] = value;
-    return result;
+	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
 });
 
-var _JsArray_push = F2(function(value, array)
+var _List_sortBy = F2(function(f, xs)
 {
-    var length = array.length;
-    var result = new Array(length + 1);
-
-    for (var i = 0; i < length; i++)
-    {
-        result[i] = array[i];
-    }
-
-    result[length] = value;
-    return result;
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		return _Utils_cmp(f(a), f(b));
+	}));
 });
 
-var _JsArray_foldl = F3(function(func, acc, array)
+var _List_sortWith = F2(function(f, xs)
 {
-    var length = array.length;
-
-    for (var i = 0; i < length; i++)
-    {
-        acc = A2(func, array[i], acc);
-    }
-
-    return acc;
-});
-
-var _JsArray_foldr = F3(function(func, acc, array)
-{
-    for (var i = array.length - 1; i >= 0; i--)
-    {
-        acc = A2(func, array[i], acc);
-    }
-
-    return acc;
-});
-
-var _JsArray_map = F2(function(func, array)
-{
-    var length = array.length;
-    var result = new Array(length);
-
-    for (var i = 0; i < length; i++)
-    {
-        result[i] = func(array[i]);
-    }
-
-    return result;
-});
-
-var _JsArray_indexedMap = F3(function(func, offset, array)
-{
-    var length = array.length;
-    var result = new Array(length);
-
-    for (var i = 0; i < length; i++)
-    {
-        result[i] = A2(func, offset + i, array[i]);
-    }
-
-    return result;
-});
-
-var _JsArray_slice = F3(function(from, to, array)
-{
-    return array.slice(from, to);
-});
-
-var _JsArray_appendN = F3(function(n, dest, source)
-{
-    var destLen = dest.length;
-    var itemsToCopy = n - destLen;
-
-    if (itemsToCopy > source.length)
-    {
-        itemsToCopy = source.length;
-    }
-
-    var size = destLen + itemsToCopy;
-    var result = new Array(size);
-
-    for (var i = 0; i < destLen; i++)
-    {
-        result[i] = dest[i];
-    }
-
-    for (var i = 0; i < itemsToCopy; i++)
-    {
-        result[i + destLen] = source[i];
-    }
-
-    return result;
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		var ord = A2(f, a, b);
+		return ord === $elm$core$Basics$EQ ? 0 : ord === $elm$core$Basics$LT ? -1 : 1;
+	}));
 });
 
 
@@ -4392,17 +4392,10 @@ function _Browser_load(url)
 		}
 	}));
 }
-var $elm$core$Maybe$Nothing = {$: 'Nothing'};
 var $elm$core$Basics$apL = F2(
 	function (f, x) {
 		return f(x);
 	});
-var $elm$core$Array$Array_elm_builtin = F4(
-	function (a, b, c, d) {
-		return {$: 'Array_elm_builtin', a: a, b: b, c: c, d: d};
-	});
-var $elm$core$Basics$EQ = {$: 'EQ'};
-var $elm$core$Basics$LT = {$: 'LT'};
 var $elm$core$List$cons = _List_cons;
 var $elm$core$Elm$JsArray$foldr = _JsArray_foldr;
 var $elm$core$Array$foldr = F3(
@@ -4480,7 +4473,13 @@ var $elm$core$Set$toList = function (_v0) {
 	var dict = _v0.a;
 	return $elm$core$Dict$keys(dict);
 };
+var $elm$core$Basics$EQ = {$: 'EQ'};
 var $elm$core$Basics$GT = {$: 'GT'};
+var $elm$core$Basics$LT = {$: 'LT'};
+var $elm$core$Array$Array_elm_builtin = F4(
+	function (a, b, c, d) {
+		return {$: 'Array_elm_builtin', a: a, b: b, c: c, d: d};
+	});
 var $elm$core$Elm$JsArray$empty = _JsArray_empty;
 var $elm$core$Array$branchFactor = 32;
 var $elm$core$Basics$ceiling = _Basics_ceiling;
@@ -4784,13 +4783,15 @@ var $elm$core$Array$repeat = F2(
 	});
 var $author$project$Main$rowSize = 9;
 var $author$project$Main$init = function () {
+	var initVals = $elm$core$Array$fromList(
+		A2($elm$core$List$range, 1, 9));
 	var rows = A2(
 		$elm$core$Array$repeat,
 		$author$project$Main$rowSize,
 		A2(
 			$elm$core$Array$map,
 			function (val) {
-				return {colID: val, possibleVals: $elm$core$Array$empty, rowID: -1, value: $elm$core$Maybe$Nothing};
+				return {colID: val, possibleVals: initVals, rowID: -1, value: ''};
 			},
 			$elm$core$Array$fromList(
 				A2($elm$core$List$range, 0, 8))));
@@ -4834,6 +4835,7 @@ var $elm$json$Json$Decode$OneOf = function (a) {
 var $elm$core$Maybe$Just = function (a) {
 	return {$: 'Just', a: a};
 };
+var $elm$core$Maybe$Nothing = {$: 'Nothing'};
 var $elm$core$String$all = _String_all;
 var $elm$core$Basics$and = _Basics_and;
 var $elm$core$Basics$append = _Utils_append;
@@ -5345,7 +5347,7 @@ var $elm$browser$Browser$sandbox = function (impl) {
 			view: impl.view
 		});
 };
-var $author$project$Main$default_tile = {colID: -1, possibleVals: $elm$core$Array$empty, rowID: -1, value: $elm$core$Maybe$Nothing};
+var $author$project$Main$default_tile = {colID: -1, possibleVals: $elm$core$Array$empty, rowID: -1, value: ''};
 var $elm$core$Bitwise$and = _Bitwise_and;
 var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
 var $elm$core$Basics$ge = _Utils_ge;
@@ -5435,13 +5437,12 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Main$update = F2(
-	function (msg, model) {
-		var recMsg = msg.a;
+var $author$project$Main$applyUpdate = F2(
+	function (recMsg, board) {
 		var the_row = A2(
 			$elm$core$Maybe$withDefault,
 			$elm$core$Array$empty,
-			A2($elm$core$Array$get, recMsg.rowID, model.board));
+			A2($elm$core$Array$get, recMsg.rowID, board));
 		var the_rec = A2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Main$default_tile,
@@ -5451,13 +5452,30 @@ var $author$project$Main$update = F2(
 			recMsg.colID,
 			_Utils_update(
 				the_rec,
-				{
-					value: $elm$core$Maybe$Just(recMsg.newValue)
-				}),
+				{value: recMsg.newValue}),
 			the_row);
-		return {
-			board: A3($elm$core$Array$set, recMsg.rowID, output, model.board)
-		};
+		return A3($elm$core$Array$set, recMsg.rowID, output, board);
+	});
+var $elm$core$Debug$log = _Debug_log;
+var $elm$core$Debug$toString = _Debug_toString;
+var $author$project$Main$update = F2(
+	function (msg, model) {
+		var _v0 = A2(
+			$elm$core$Debug$log,
+			'msg',
+			$elm$core$Debug$toString(msg));
+		var recMsg = msg.a;
+		var _v2 = $elm$core$String$toInt(recMsg.newValue);
+		if (_v2.$ === 'Just') {
+			var value = _v2.a;
+			return ((value >= 1) && (value <= 9)) ? {
+				board: A2($author$project$Main$applyUpdate, recMsg, model.board)
+			} : {board: model.board};
+		} else {
+			return {
+				board: A2($author$project$Main$applyUpdate, recMsg, model.board)
+			};
+		}
 	});
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
@@ -5470,20 +5488,55 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 var $elm$html$Html$Attributes$class = $elm$html$Html$Attributes$stringProperty('className');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $author$project$Main$UpdateBoard = function (a) {
+	return {$: 'UpdateBoard', a: a};
+};
 var $elm$html$Html$input = _VirtualDom_node('input');
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
 var $elm$html$Html$td = _VirtualDom_node('td');
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$Main$tileToInput = function (tile) {
-	var actualVal = function () {
-		var _v0 = tile.value;
-		if (_v0.$ === 'Just') {
-			var value = _v0.a;
-			return $elm$core$String$fromInt(value);
-		} else {
-			return '';
-		}
-	}();
+	var boardMsg = {colID: tile.colID, newValue: tile.value, rowID: tile.rowID};
+	var helper = function (input) {
+		return $author$project$Main$UpdateBoard(
+			_Utils_update(
+				boardMsg,
+				{newValue: input}));
+	};
 	return A2(
 		$elm$html$Html$td,
 		_List_Nil,
@@ -5494,7 +5547,8 @@ var $author$project$Main$tileToInput = function (tile) {
 				_List_fromArray(
 					[
 						$elm$html$Html$Attributes$type_('text'),
-						$elm$html$Html$Attributes$value(actualVal)
+						$elm$html$Html$Attributes$value(tile.value),
+						$elm$html$Html$Events$onInput(helper)
 					]),
 				_List_Nil)
 			]));
