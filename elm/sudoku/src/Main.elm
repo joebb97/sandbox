@@ -20,7 +20,7 @@ type alias Board =
 
 
 type alias Model =
-    { board : Board }
+    { board : Board, solved : Bool }
 
 
 type alias UpdateBoardMsg =
@@ -51,7 +51,7 @@ init =
         new_rows =
             Array.indexedMap (\idx row -> Array.map (\val -> { val | rowID = idx }) row) rows
     in
-    { board = new_rows }
+    { board = new_rows, solved = False }
 
 
 type Msg
@@ -72,29 +72,70 @@ applyUpdate recMsg board =
         the_rec =
             Maybe.withDefault default_tile <| Array.get recMsg.colID the_row
 
+        newPossibleVals =
+            if validValue recMsg.newValue then
+                Array.empty
+
+            else
+                the_rec.possibleVals
+
         output =
-            Array.set recMsg.colID { the_rec | value = recMsg.newValue } the_row
+            Array.set recMsg.colID { the_rec | value = recMsg.newValue, possibleVals = newPossibleVals } the_row
     in
     Array.set recMsg.rowID output board
 
 
-update: Msg -> Model -> Model
+fixPossibleVals : UpdateBoardMsg -> Board -> Board
+fixPossibleVals recMsg board =
+    -- This function is only called when validValue recMsg.newValue is true
+    let
+        the_row =
+            Maybe.withDefault Array.empty <| Array.get recMsg.rowID board
+    in
+    board
+
+
+validValue tileVal =
+    case String.toInt tileVal of
+        Just value ->
+            if value >= 1 && value <= 9 then
+                True
+
+            else
+                False
+
+        Nothing ->
+            False
+
+
+update : Msg -> Model -> Model
 update msg model =
     let
-        _ = Debug.log "msg" <| Debug.toString msg
+        _ =
+            Debug.log "msg" <| Debug.toString msg
     in
     case msg of
         UpdateBoard recMsg ->
+            let
+                cleared =
+                    { recMsg | newValue = "" }
+            in
             case String.toInt recMsg.newValue of
                 Just value ->
                     if value >= 1 && value <= 9 then
-                        { board = applyUpdate recMsg model.board }
+                        { board = fixPossibleVals recMsg <| applyUpdate recMsg model.board
+                        , solved = False
+                        }
+
                     else
-                        {board = model.board}
+                        { board = model.board
+                        , solved = False
+                        }
 
-                Nothing -> 
-                    { board = applyUpdate recMsg model.board }
-
+                Nothing ->
+                    { board = applyUpdate cleared model.board
+                    , solved = False
+                    }
 
 
 tileToInput : Tile -> Html Msg
@@ -102,7 +143,9 @@ tileToInput tile =
     let
         boardMsg =
             { rowID = tile.rowID, colID = tile.colID, newValue = tile.value }
-        helper input = UpdateBoard { boardMsg | newValue = input}
+
+        helper input =
+            UpdateBoard { boardMsg | newValue = input }
     in
     td [] [ input [ type_ "text", value tile.value, onInput helper ] [] ]
 
@@ -119,11 +162,3 @@ view model =
             Array.toList <|
                 Array.map rowToTr model.board
         ]
-
-
-
--- (List.repeat 9 <|
---     tr [] <|
---         List.repeat 9 <|
---             td [] [ input [ type_ "text", value "4" ] [] ]
--- )

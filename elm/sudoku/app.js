@@ -4392,6 +4392,7 @@ function _Browser_load(url)
 		}
 	}));
 }
+var $elm$core$Basics$False = {$: 'False'};
 var $elm$core$Basics$apL = F2(
 	function (f, x) {
 		return f(x);
@@ -4732,7 +4733,6 @@ var $elm$core$List$range = F2(
 		return A3($elm$core$List$rangeHelp, lo, hi, _List_Nil);
 	});
 var $elm$core$Elm$JsArray$initialize = _JsArray_initialize;
-var $elm$core$Basics$False = {$: 'False'};
 var $elm$core$Basics$idiv = _Basics_idiv;
 var $elm$core$Array$initializeHelp = F5(
 	function (fn, fromIndex, len, nodeList, tail) {
@@ -4809,7 +4809,7 @@ var $author$project$Main$init = function () {
 					row);
 			}),
 		rows);
-	return {board: new_rows};
+	return {board: new_rows, solved: false};
 }();
 var $elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
@@ -5428,6 +5428,15 @@ var $elm$core$Array$set = F3(
 			A4($elm$core$Array$setHelp, startShift, index, value, tree),
 			tail));
 	});
+var $author$project$Main$validValue = function (tileVal) {
+	var _v0 = $elm$core$String$toInt(tileVal);
+	if (_v0.$ === 'Just') {
+		var value = _v0.a;
+		return ((value >= 1) && (value <= 9)) ? true : false;
+	} else {
+		return false;
+	}
+};
 var $elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -5447,14 +5456,23 @@ var $author$project$Main$applyUpdate = F2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Main$default_tile,
 			A2($elm$core$Array$get, recMsg.colID, the_row));
+		var newPossibleVals = $author$project$Main$validValue(recMsg.newValue) ? $elm$core$Array$empty : the_rec.possibleVals;
 		var output = A3(
 			$elm$core$Array$set,
 			recMsg.colID,
 			_Utils_update(
 				the_rec,
-				{value: recMsg.newValue}),
+				{possibleVals: newPossibleVals, value: recMsg.newValue}),
 			the_row);
 		return A3($elm$core$Array$set, recMsg.rowID, output, board);
+	});
+var $author$project$Main$fixPossibleVals = F2(
+	function (recMsg, board) {
+		var the_row = A2(
+			$elm$core$Maybe$withDefault,
+			$elm$core$Array$empty,
+			A2($elm$core$Array$get, recMsg.rowID, board));
+		return board;
 	});
 var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Debug$toString = _Debug_toString;
@@ -5465,15 +5483,23 @@ var $author$project$Main$update = F2(
 			'msg',
 			$elm$core$Debug$toString(msg));
 		var recMsg = msg.a;
+		var cleared = _Utils_update(
+			recMsg,
+			{newValue: ''});
 		var _v2 = $elm$core$String$toInt(recMsg.newValue);
 		if (_v2.$ === 'Just') {
 			var value = _v2.a;
 			return ((value >= 1) && (value <= 9)) ? {
-				board: A2($author$project$Main$applyUpdate, recMsg, model.board)
-			} : {board: model.board};
+				board: A2(
+					$author$project$Main$fixPossibleVals,
+					recMsg,
+					A2($author$project$Main$applyUpdate, recMsg, model.board)),
+				solved: false
+			} : {board: model.board, solved: false};
 		} else {
 			return {
-				board: A2($author$project$Main$applyUpdate, recMsg, model.board)
+				board: A2($author$project$Main$applyUpdate, cleared, model.board),
+				solved: false
 			};
 		}
 	});
