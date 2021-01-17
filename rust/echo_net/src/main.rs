@@ -8,7 +8,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .version("1.0")
         .author("Joey Buiteweg <joebb@umich.edu>")
         .about("Create an echo server or client to send messages with.")
-        .arg(Arg::new("proto")
+        .arg(Arg::new("protocol")
              .long("proto")
              .value_name("tcp|udp")
              .default_value("tcp")
