@@ -20,6 +20,12 @@ fn main() -> Result<(), Box<dyn Error>> {
              .default_value("5005")
              .about("Set port to connect to/listen on")
              .takes_value(true))
+        .arg(Arg::new("buffersize")
+             .long("buffersize")
+             .value_name("BUFSIZE")
+             .default_value("1024")
+             .about("Set size of buffer for communication")
+             .takes_value(true))
         .arg(Arg::new("address")
              .long("addr")
              .short('a')
@@ -40,7 +46,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .get_matches();
     let server_set = matches.is_present("server");
     let client_set = matches.is_present("client");
-    println!("{:?} {:?}", server_set, client_set);
     if !(server_set || client_set) || (server_set && client_set) {
         Err("Exactly one of -s|-c must be specified")?;
     }
