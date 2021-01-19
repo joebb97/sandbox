@@ -52,29 +52,6 @@ int main(int argc, char **argv) {
   printf("Stalls: ");
   int *stalls = (int *)calloc(arr_len, sizeof(int));
   init_stalls(stalls, arr_len, line, line_size);
+  calculate_social_distance(stalls, arr_len);
   free(stalls);
-}
-
-/*
- * Function: calculate_social_distance
- * ------------------------------------
- *
- *  Calculate the MAX D after adding two cows to the stalls
- *
- *  A 1 denotes a cow occupies a stall, a 0 denotes the stall is empty
- *
- *  Example 1:
- *  ---------
- *  N: 14
- *  1 0 0 0 1 0 0 1 0 0 0 0 1 0
- *  D: 2
- *  Why? -> 1 0 X 0 0 1 0 0 0 1 0 X 0 0 1 0
- *  Where X denotes where a cow was added
- *
- *  Example 2:
- *  ---------
- *
- */
-int calculate_social_distance(int *stalls, long stalls_len) { 
-    return 0;
 }

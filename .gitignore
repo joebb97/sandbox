@@ -39,3 +39,4 @@ target/
 Session.vim
 builddir
 tags.lock
+env
