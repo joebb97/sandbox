@@ -45,22 +45,29 @@ init =
 
 type Msg
     = UpdateBoard UpdateBoardMsg
+    | ClearBoard
+    | GenerateBoard
+    | SolveBoard
 
 
 update : Msg -> Model -> Model
 update msg model =
     let
-        _ = Debug.log "msg" <| Debug.toString msg
+        _ =
+            Debug.log "msg" <| Debug.toString msg
     in
     case msg of
         UpdateBoard recMsg ->
             let
                 cleared =
                     { recMsg | newValue = "" }
+
+                tile =
+                    getTile ( recMsg.rowID, recMsg.colID ) model.board
             in
             case String.toInt recMsg.newValue of
                 Just value ->
-                    if value >= 1 && value <= 9 then
+                    if (value >= 1 && value <= 9) && List.member value tile.possibleVals then
                         { board = fixPossibleVals recMsg <| applyUpdate recMsg model.board
                         , solved = False
                         }
@@ -71,16 +78,25 @@ update msg model =
                         }
 
                 Nothing ->
-                    { board = applyUpdate cleared model.board
+                    { board = fixPossibleVals recMsg <| applyUpdate cleared model.board
                     , solved = False
                     }
+
+        ClearBoard ->
+            init
+
+        GenerateBoard ->
+            model
+
+        SolveBoard ->
+            model
 
 
 tileToInput : Tile -> Html Msg
 tileToInput tile =
     let
         boardMsg =
-            { rowID = tile.rowID, colID = tile.colID, newValue = tile.value }
+            { rowID = tile.rowID, colID = tile.colID, oldValue = tile.value, newValue = tile.value }
 
         helper input =
             UpdateBoard { boardMsg | newValue = input }
@@ -103,4 +119,14 @@ view model =
             List.map (\idxRow -> rowToTr <| List.map (\tup -> getTile tup model.board) idxRow) indexRows
     in
     div [ class "content" ]
-        [ table [ id "grid" ] <| tileRows ]
+        [ table [ id "grid" ] <| tileRows
+        , button
+            [ onClick ClearBoard ]
+            [ text "clear" ]
+        , button
+            [ onClick GenerateBoard ]
+            [ text "new puzzle" ]
+        , button
+            [ onClick SolveBoard ]
+            [ text "solve" ]
+        ]

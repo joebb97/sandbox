@@ -7,6 +7,10 @@ rowSize =
     9
 
 
+preSolved =
+    10
+
+
 type alias Tile =
     { value : String, rowID : Int, colID : Int, possibleVals : List Int }
 
@@ -21,7 +25,7 @@ type alias Board =
 
 
 type alias UpdateBoardMsg =
-    { rowID : Int, colID : Int, newValue : String }
+    { rowID : Int, colID : Int, newValue : String, oldValue : String }
 
 
 applyUpdate : UpdateBoardMsg -> Board -> Board
@@ -46,13 +50,28 @@ applyUpdate recMsg board =
     Dict.insert tup new_rec board
 
 
-ruleOut : Tile -> Int -> Tile
-ruleOut tile val =
+adjustPossibleVal : UpdateBoardMsg -> Tile -> Tile
+adjustPossibleVal recMsg tile =
     let
         newPossibleVals =
-            tile.possibleVals
+            if validValue recMsg.newValue then
+                let
+                    asInt =
+                        Maybe.withDefault 0 <| String.toInt recMsg.newValue
+                in
+                List.filter (\item -> item /= asInt) tile.possibleVals
+
+            else if validValue recMsg.oldValue then
+                let
+                    asInt =
+                        Maybe.withDefault 0 <| String.toInt recMsg.oldValue
+                in
+                List.sort <| List.append tile.possibleVals [ asInt ]
+
+            else
+                tile.possibleVals
     in
-    tile
+    { tile | possibleVals = newPossibleVals }
 
 
 quadrantCoords : ( Int, Int ) -> List ( Int, Int )
@@ -83,7 +102,6 @@ quadrantCoords tup =
 
 fixPossibleVals : UpdateBoardMsg -> Board -> Board
 fixPossibleVals recMsg board =
-    -- This function is only called when validValue recMsg.newValue is true
     let
         indices =
             getIndicesCat
@@ -100,10 +118,23 @@ fixPossibleVals recMsg board =
         allCoords =
             List.concat [ sameRow, sameCol, sameQuad ]
 
+        updateTile =
+            \tup ->
+                ( tup
+                , adjustPossibleVal recMsg <|
+                    getTile tup board
+                )
+
+        otherDict =
+            Dict.fromList <| List.map updateTile allCoords
+
+        newBoard =
+            Dict.union otherDict board
+
         _ =
-            Debug.log "fixVals" <| Debug.toString allCoords
+            Debug.log "fixVals" <| Debug.toString otherDict
     in
-    board
+    newBoard
 
 
 validValue tileVal =

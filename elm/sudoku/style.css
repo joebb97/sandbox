@@ -2,7 +2,7 @@ body {
     background-color: #FAFAFA
 }
 
-table {
+table, button {
     margin: 10px; 
 }
 
