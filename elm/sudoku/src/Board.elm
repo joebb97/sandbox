@@ -1,6 +1,5 @@
 module Board exposing (..)
 
-import Array exposing (Array)
 import Dict exposing (Dict)
 
 
@@ -9,21 +8,16 @@ rowSize =
 
 
 type alias Tile =
-    { value : String, rowID : Int, colID : Int, possibleVals : Array Int }
+    { value : String, rowID : Int, colID : Int, possibleVals : List Int }
 
 
 defaultTile : Tile
 defaultTile =
-    { value = "", rowID = -1, colID = -1, possibleVals = Array.empty }
+    { value = "", rowID = -1, colID = -1, possibleVals = [] }
 
 
 type alias Board =
     Dict ( Int, Int ) Tile
-
-
-defaultBoard : Board
-defaultBoard =
-    Dict.empty
 
 
 type alias UpdateBoardMsg =
@@ -41,17 +35,74 @@ applyUpdate recMsg board =
 
         newPossibleVals =
             if validValue recMsg.newValue then
-                Array.empty
+                []
 
             else
                 the_rec.possibleVals
+
+        new_rec =
+            { the_rec | value = recMsg.newValue, possibleVals = newPossibleVals }
     in
-    Dict.insert tup { the_rec | value = recMsg.newValue, possibleVals = newPossibleVals } board
+    Dict.insert tup new_rec board
+
+
+ruleOut : Tile -> Int -> Tile
+ruleOut tile val =
+    let
+        newPossibleVals =
+            tile.possibleVals
+    in
+    tile
+
+
+quadrantCoords : ( Int, Int ) -> List ( Int, Int )
+quadrantCoords tup =
+    let
+        ( row, col ) =
+            tup
+
+        newRow =
+            (row // 3) * 3
+
+        newCol =
+            (col // 3) * 3
+
+        rowIndices =
+            List.range newRow <| newRow + 2
+
+        colIndices =
+            List.range newCol <| newCol + 2
+
+        quadrantIndices =
+            List.filter (\tupIt -> tupIt /= tup) <|
+                List.concat <|
+                    List.map (\rowIt -> List.map (\colIt -> ( rowIt, colIt )) colIndices) rowIndices
+    in
+    quadrantIndices
 
 
 fixPossibleVals : UpdateBoardMsg -> Board -> Board
 fixPossibleVals recMsg board =
     -- This function is only called when validValue recMsg.newValue is true
+    let
+        indices =
+            getIndicesCat
+
+        sameRow =
+            List.filter (\tup -> Tuple.first tup == recMsg.rowID) indices
+
+        sameCol =
+            List.filter (\tup -> Tuple.second tup == recMsg.colID) indices
+
+        sameQuad =
+            quadrantCoords ( recMsg.rowID, recMsg.colID )
+
+        allCoords =
+            List.concat [ sameRow, sameCol, sameQuad ]
+
+        _ =
+            Debug.log "fixVals" <| Debug.toString allCoords
+    in
     board
 
 

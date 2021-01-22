@@ -1,6 +1,5 @@
 module Main exposing (..)
 
-import Array exposing (Array)
 import Board exposing (..)
 import Browser
 import Dict exposing (Dict)
@@ -28,7 +27,7 @@ init =
             getIndicesCat
 
         initVals =
-            Array.fromList (List.range 1 9)
+            List.range 1 9
 
         tup_to_rec =
             \tup ->
@@ -51,8 +50,7 @@ type Msg
 update : Msg -> Model -> Model
 update msg model =
     let
-        _ =
-            Debug.log "msg" <| Debug.toString msg
+        _ = Debug.log "msg" <| Debug.toString msg
     in
     case msg of
         UpdateBoard recMsg ->
