@@ -1,6 +1,7 @@
 module Board exposing (..)
 
 import Array exposing (Array)
+import Dict exposing (Dict)
 
 
 rowSize =
@@ -17,7 +18,12 @@ defaultTile =
 
 
 type alias Board =
-    Array (Array Tile)
+    Dict ( Int, Int ) Tile
+
+
+defaultBoard : Board
+defaultBoard =
+    Dict.empty
 
 
 type alias UpdateBoardMsg =
@@ -27,11 +33,11 @@ type alias UpdateBoardMsg =
 applyUpdate : UpdateBoardMsg -> Board -> Board
 applyUpdate recMsg board =
     let
-        the_row =
-            Maybe.withDefault Array.empty <| Array.get recMsg.rowID board
+        tup =
+            ( recMsg.rowID, recMsg.colID )
 
         the_rec =
-            Maybe.withDefault defaultTile <| Array.get recMsg.colID the_row
+            Maybe.withDefault defaultTile <| Dict.get tup board
 
         newPossibleVals =
             if validValue recMsg.newValue then
@@ -39,26 +45,13 @@ applyUpdate recMsg board =
 
             else
                 the_rec.possibleVals
-
-        output =
-            Array.set recMsg.colID { the_rec | value = recMsg.newValue, possibleVals = newPossibleVals } the_row
     in
-    Array.set recMsg.rowID output board
+    Dict.insert tup { the_rec | value = recMsg.newValue, possibleVals = newPossibleVals } board
 
 
 fixPossibleVals : UpdateBoardMsg -> Board -> Board
 fixPossibleVals recMsg board =
     -- This function is only called when validValue recMsg.newValue is true
-    let
-        the_row =
-            Maybe.withDefault Array.empty <| Array.get recMsg.rowID board
-
-        new_val =
-            Maybe.withDefault -1 <| String.toInt recMsg.newValue
-
-        new_row =
-            Array.map (\rec -> { rec | possibleVals = Array.filter (\item -> item /= new_val) rec.possibleVals }) the_row
-    in
     board
 
 
@@ -73,3 +66,29 @@ validValue tileVal =
 
         Nothing ->
             False
+
+
+getIndicesCat : List ( Int, Int )
+getIndicesCat =
+    let
+        zero_to_eight =
+            List.range 0 8
+    in
+    List.concat <|
+        List.map (\rowID -> List.map (\colID -> ( rowID, colID )) <| zero_to_eight) <|
+            zero_to_eight
+
+
+getIndices : List (List ( Int, Int ))
+getIndices =
+    let
+        zero_to_eight =
+            List.range 0 8
+    in
+    List.map (\rowID -> List.map (\colID -> ( rowID, colID )) <| zero_to_eight) <|
+        zero_to_eight
+
+
+getTile : ( Int, Int ) -> Board -> Tile
+getTile tup board =
+    Maybe.withDefault defaultTile <| Dict.get tup board

@@ -3,6 +3,7 @@ module Main exposing (..)
 import Array exposing (Array)
 import Board exposing (..)
 import Browser
+import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -23,20 +24,24 @@ main =
 init : Model
 init =
     let
+        tuples =
+            getIndicesCat
+
         initVals =
             Array.fromList (List.range 1 9)
 
-        rows =
-            Array.repeat rowSize <|
-                Array.map
-                    (\val -> { colID = val, rowID = -1, value = "", possibleVals = initVals })
-                <|
-                    Array.fromList (List.range 0 8)
+        tup_to_rec =
+            \tup ->
+                { rowID = Tuple.first tup
+                , colID = Tuple.second tup
+                , value = ""
+                , possibleVals = initVals
+                }
 
-        new_rows =
-            Array.indexedMap (\idx row -> Array.map (\val -> { val | rowID = idx }) row) rows
+        init_board =
+            Dict.fromList <| List.map (\tup -> ( tup, tup_to_rec tup )) tuples
     in
-    { board = new_rows, solved = False }
+    { board = init_board, solved = False }
 
 
 type Msg
@@ -85,15 +90,19 @@ tileToInput tile =
     td [] [ input [ type_ "text", value tile.value, onInput helper ] [] ]
 
 
-rowToTr : Array Tile -> Html Msg
+rowToTr : List Tile -> Html Msg
 rowToTr row =
-    tr [] <| Array.toList <| Array.map tileToInput row
+    tr [] <| List.map tileToInput row
 
 
 view : Model -> Html Msg
 view model =
+    let
+        indexRows =
+            getIndices
+
+        tileRows =
+            List.map (\idxRow -> rowToTr <| List.map (\tup -> getTile tup model.board) idxRow) indexRows
+    in
     div [ class "content" ]
-        [ table [ id "grid" ] <|
-            Array.toList <|
-                Array.map rowToTr model.board
-        ]
+        [ table [ id "grid" ] <| tileRows ]
