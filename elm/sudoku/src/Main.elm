@@ -6,6 +6,7 @@ import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import Random
 import Set exposing (Set)
 import Util exposing (..)
 
@@ -43,7 +44,7 @@ type Msg
     = UpdateBoard UpdateBoardMsg
     | ClearBoard
     | GenerateBoard Int
-    | NewRandom Int
+    | NewRandom Board
     | SolveBoard
 
 
@@ -83,13 +84,21 @@ update msg model =
             ( initialModel, Cmd.none )
 
         GenerateBoard _ ->
-            ( model, Cmd.none )
+            ( model
+            , Random.generate
+                NewRandom
+                (preFilledGen |> Random.andThen (boardFromPositions defaultBoard))
+            )
 
         SolveBoard ->
             ( model, Cmd.none )
 
         NewRandom newRand ->
-            ( model, Cmd.none )
+            -- let
+            --     _ =
+            --         Debug.log "NewRandom" <| Debug.toString newRand
+            -- in
+            ( { model | board = newRand }, Cmd.none )
 
 
 tileToInput : ( ( Int, Int ), Tile ) -> Html Msg

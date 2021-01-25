@@ -1,6 +1,7 @@
 module Board exposing (..)
 
 import Dict exposing (Dict)
+import Random
 import Set exposing (Set)
 
 
@@ -50,6 +51,82 @@ type alias UpdateBoardMsg =
     { rowID : Int, colID : Int, newValue : String, oldValue : String }
 
 
+coordGen : Random.Generator ( Int, Int )
+coordGen =
+    Random.pair (Random.int 0 8) (Random.int 0 8)
+
+
+nextCoord : List ( Int, Int ) -> Random.Generator ( Int, Int )
+nextCoord soFar =
+    coordGen
+        |> Random.andThen
+            (\coord ->
+                if List.member coord soFar then
+                    -- try again
+                    Random.lazy (\_ -> nextCoord soFar)
+
+                else
+                    Random.constant coord
+            )
+
+
+preFilledGen : Random.Generator (List ( Int, Int ))
+preFilledGen =
+    Random.list 17 (nextCoord [])
+
+
+addRandomTileAt : ( Int, Int ) -> Board -> Random.Generator Board
+addRandomTileAt coord board =
+    let
+        theTile =
+            getTile coord board
+
+        ( row, col ) =
+            coord
+
+        asList =
+            Set.toList theTile.possibleVals
+
+        ( front, back ) =
+            case asList of
+                [] ->
+                    ( -1, [] )
+
+                head :: rest ->
+                    ( head, rest )
+
+        recMsg val =
+            let
+                rec =
+                    { rowID = row, colID = col, newValue = val, oldValue = theTile.value }
+
+                _ =
+                    Debug.log "addRandom" <| "possible vals = " ++ Debug.toString asList ++ " " ++ Debug.toString rec
+            in
+            rec
+    in
+    Random.uniform front back
+    |> Random.map (\sel -> applyUpdateAndFix (recMsg <| String.fromInt sel) board)
+
+
+boardFromPositions : Board -> List ( Int, Int ) -> Random.Generator Board
+boardFromPositions board positions =
+    let
+        filtered =
+            Set.toList <| Set.fromList positions
+
+        _ =
+            Debug.log "boardFromPositions" <| Debug.toString filtered ++ " " ++ Debug.toString (List.length filtered)
+    in
+    List.foldl
+        (\pos boardSoFarGen ->
+            boardSoFarGen
+                |> Random.andThen (addRandomTileAt pos)
+        )
+        (Random.constant board)
+        filtered
+
+
 applyUpdate : UpdateBoardMsg -> Board -> Board
 applyUpdate recMsg board =
     let
@@ -57,11 +134,10 @@ applyUpdate recMsg board =
             ( recMsg.rowID, recMsg.colID )
 
         the_rec =
-            Maybe.withDefault defaultTile <| Dict.get tup board
+            getTile tup board
 
-        _ =
-            Debug.log "applyUpdate" <| Debug.toString recMsg ++ Debug.toString the_rec
-
+        -- _ =
+        --     Debug.log "applyUpdate" <| Debug.toString recMsg ++ Debug.toString the_rec
         newPossibleVals =
             if validValue recMsg.newValue then
                 Set.empty
@@ -245,4 +321,13 @@ getIndices =
 
 getTile : ( Int, Int ) -> Board -> Tile
 getTile tup board =
-    Maybe.withDefault defaultTile <| Dict.get tup board
+    case Dict.get tup board of
+        Just tile ->
+            tile
+
+        Nothing ->
+            let
+                _ =
+                    Debug.log "DEFAULT TILE!!!!"
+            in
+            defaultTile
