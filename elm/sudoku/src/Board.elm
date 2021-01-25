@@ -10,7 +10,7 @@ rowSize =
 
 
 preSolved =
-    17
+    25
 
 
 type alias Tile =
@@ -56,7 +56,7 @@ coordGen =
     Random.pair (Random.int 0 8) (Random.int 0 8)
 
 
-nextCoord : List ( Int, Int ) -> Random.Generator ( Int, Int )
+nextCoord : List ( Int, Int ) -> Random.Generator (List (Int, Int) )
 nextCoord soFar =
     coordGen
         |> Random.andThen
@@ -66,13 +66,13 @@ nextCoord soFar =
                     Random.lazy (\_ -> nextCoord soFar)
 
                 else
-                    Random.constant coord
+                    Random.constant (coord :: soFar)
             )
 
 
 preFilledGen : Random.Generator (List ( Int, Int ))
 preFilledGen =
-    Random.list 17 (nextCoord [])
+    Random.list preSolved coordGen |> Random.andThen nextCoord 
 
 
 addRandomTileAt : ( Int, Int ) -> Board -> Random.Generator Board
@@ -112,11 +112,8 @@ addRandomTileAt coord board =
 boardFromPositions : Board -> List ( Int, Int ) -> Random.Generator Board
 boardFromPositions board positions =
     let
-        filtered =
-            Set.toList <| Set.fromList positions
-
         _ =
-            Debug.log "boardFromPositions" <| Debug.toString filtered ++ " " ++ Debug.toString (List.length filtered)
+            Debug.log "boardFromPositions" <| Debug.toString positions ++ " " ++ Debug.toString (List.length positions)
     in
     List.foldl
         (\pos boardSoFarGen ->
@@ -124,7 +121,7 @@ boardFromPositions board positions =
                 |> Random.andThen (addRandomTileAt pos)
         )
         (Random.constant board)
-        filtered
+        positions
 
 
 applyUpdate : UpdateBoardMsg -> Board -> Board
@@ -138,15 +135,15 @@ applyUpdate recMsg board =
 
         -- _ =
         --     Debug.log "applyUpdate" <| Debug.toString recMsg ++ Debug.toString the_rec
-        newPossibleVals =
-            if validValue recMsg.newValue then
-                Set.empty
+        (newVal, newPossibleVals) =
+            if validValue recMsg.newValue && not (Set.isEmpty the_rec.possibleVals ) then
+                (recMsg.newValue, Set.empty)
 
             else
-                the_rec.possibleVals
+                ("", the_rec.possibleVals)
 
         new_rec =
-            { the_rec | value = recMsg.newValue, possibleVals = newPossibleVals }
+            { the_rec | value = newVal, possibleVals = newPossibleVals }
     in
     Dict.insert tup new_rec board
 
