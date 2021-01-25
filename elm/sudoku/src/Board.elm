@@ -80,9 +80,12 @@ applyUpdateAndFix recMsg board =
     fixPossibleVals recMsg <| applyUpdate recMsg board
 
 
-adjustPossibleVal : UpdateBoardMsg -> Set Int -> Tile -> Tile
-adjustPossibleVal recMsg cands tile =
+adjustPossibleVal : UpdateBoardMsg -> Set Int -> ( Int, Int ) -> Board -> Tile
+adjustPossibleVal recMsg cands coord board =
     let
+        tile =
+            getTile coord board
+
         newPossibleVals =
             if validValue recMsg.newValue then
                 let
@@ -95,8 +98,11 @@ adjustPossibleVal recMsg cands tile =
                 let
                     asInt =
                         Maybe.withDefault 0 <| String.toInt recMsg.oldValue
+
+                    neighborVals =
+                        getNeighborVals coord board
                 in
-                Set.union tile.possibleVals <| Set.insert asInt cands
+                Set.intersect neighborVals <| Set.union tile.possibleVals <| Set.insert asInt cands
 
             else
                 tile.possibleVals
@@ -104,16 +110,16 @@ adjustPossibleVal recMsg cands tile =
     { tile | possibleVals = newPossibleVals }
 
 
-fixPossibleVals : UpdateBoardMsg -> Board -> Board
-fixPossibleVals recMsg board =
+getNeighborVals : ( Int, Int ) -> Board -> Set Int
+getNeighborVals coord board =
     let
         neighbors =
-            Set.fromList <| List.map .value <| List.map (\tup -> getTile tup board) <| getNeighbors recMsg
+            Set.fromList <| List.map .value <| List.map (\tup -> getTile tup board) <| getNeighbors coord
 
         allPossible =
             Set.fromList <| List.map String.fromInt <| List.range 1 9
 
-        cands  =
+        cands =
             Set.map
                 (\item ->
                     Maybe.withDefault 0 <|
@@ -122,17 +128,27 @@ fixPossibleVals recMsg board =
             <|
                 Set.remove "" <|
                     Set.diff allPossible neighbors
-                    
+    in
+    cands
+
+
+fixPossibleVals : UpdateBoardMsg -> Board -> Board
+fixPossibleVals recMsg board =
+    let
+        coord =
+            ( recMsg.rowID, recMsg.colID )
+
+        cands =
+            getNeighborVals coord board
+
         updateTile =
             \tup ->
                 ( tup
-                , adjustPossibleVal recMsg cands <|
-                    getTile tup board
+                , adjustPossibleVal recMsg cands tup board
                 )
 
         otherDict =
-            Dict.fromList <| List.map updateTile <| getNeighbors recMsg
-
+            Dict.fromList <| List.map updateTile <| getNeighbors coord
 
         newBoard =
             Dict.union otherDict board
@@ -169,20 +185,23 @@ quadrantCoords tup =
     quadrantIndices
 
 
-getNeighbors : UpdateBoardMsg -> List ( Int, Int )
-getNeighbors recMsg =
+getNeighbors : ( Int, Int ) -> List ( Int, Int )
+getNeighbors coord =
     let
+        ( row, col ) =
+            coord
+
         indices =
             getIndicesCat
 
         sameRow =
-            List.filter (\tup -> Tuple.first tup == recMsg.rowID) indices
+            List.filter (\tup -> Tuple.first tup == row) indices
 
         sameCol =
-            List.filter (\tup -> Tuple.second tup == recMsg.colID) indices
+            List.filter (\tup -> Tuple.second tup == col) indices
 
         sameQuad =
-            quadrantCoords ( recMsg.rowID, recMsg.colID )
+            quadrantCoords coord
 
         allCoords =
             List.concat [ sameRow, sameCol, sameQuad ]
