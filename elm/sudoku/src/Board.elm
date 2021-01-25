@@ -1,6 +1,7 @@
 module Board exposing (..)
 
 import Dict exposing (Dict)
+import Set exposing (Set)
 
 
 rowSize =
@@ -8,20 +9,41 @@ rowSize =
 
 
 preSolved =
-    10
+    17
 
 
 type alias Tile =
-    { value : String, rowID : Int, colID : Int, possibleVals : List Int }
+    { value : String, possibleVals : Set Int }
 
 
 defaultTile : Tile
 defaultTile =
-    { value = "", rowID = -1, colID = -1, possibleVals = [] }
+    { value = "", possibleVals = Set.empty }
 
 
 type alias Board =
     Dict ( Int, Int ) Tile
+
+
+defaultBoard : Board
+defaultBoard =
+    let
+        tuples =
+            getIndicesCat
+
+        initVals =
+            Set.fromList <| List.range 1 9
+
+        tup_to_rec =
+            \tup ->
+                { value = ""
+                , possibleVals = initVals
+                }
+
+        init_board =
+            Dict.fromList <| List.map (\tup -> ( tup, tup_to_rec tup )) tuples
+    in
+    init_board
 
 
 type alias UpdateBoardMsg =
@@ -37,9 +59,12 @@ applyUpdate recMsg board =
         the_rec =
             Maybe.withDefault defaultTile <| Dict.get tup board
 
+        _ =
+            Debug.log "applyUpdate" <| Debug.toString recMsg ++ Debug.toString the_rec
+
         newPossibleVals =
             if validValue recMsg.newValue then
-                []
+                Set.empty
 
             else
                 the_rec.possibleVals
@@ -50,8 +75,13 @@ applyUpdate recMsg board =
     Dict.insert tup new_rec board
 
 
-adjustPossibleVal : UpdateBoardMsg -> Tile -> Tile
-adjustPossibleVal recMsg tile =
+applyUpdateAndFix : UpdateBoardMsg -> Board -> Board
+applyUpdateAndFix recMsg board =
+    fixPossibleVals recMsg <| applyUpdate recMsg board
+
+
+adjustPossibleVal : UpdateBoardMsg -> Set Int -> Tile -> Tile
+adjustPossibleVal recMsg cands tile =
     let
         newPossibleVals =
             if validValue recMsg.newValue then
@@ -59,19 +89,58 @@ adjustPossibleVal recMsg tile =
                     asInt =
                         Maybe.withDefault 0 <| String.toInt recMsg.newValue
                 in
-                List.filter (\item -> item /= asInt) tile.possibleVals
+                Set.remove asInt tile.possibleVals
 
             else if validValue recMsg.oldValue then
                 let
                     asInt =
                         Maybe.withDefault 0 <| String.toInt recMsg.oldValue
                 in
-                List.sort <| List.append tile.possibleVals [ asInt ]
+                Set.union tile.possibleVals <| Set.insert asInt cands
 
             else
                 tile.possibleVals
     in
     { tile | possibleVals = newPossibleVals }
+
+
+fixPossibleVals : UpdateBoardMsg -> Board -> Board
+fixPossibleVals recMsg board =
+    let
+        neighbors =
+            Set.fromList <| List.map .value <| List.map (\tup -> getTile tup board) <| getNeighbors recMsg
+
+        allPossible =
+            Set.fromList <| List.map String.fromInt <| List.range 1 9
+
+        cands  =
+            Set.map
+                (\item ->
+                    Maybe.withDefault 0 <|
+                        String.toInt item
+                )
+            <|
+                Set.remove "" <|
+                    Set.diff allPossible neighbors
+                    
+        updateTile =
+            \tup ->
+                ( tup
+                , adjustPossibleVal recMsg cands <|
+                    getTile tup board
+                )
+
+        otherDict =
+            Dict.fromList <| List.map updateTile <| getNeighbors recMsg
+
+
+        newBoard =
+            Dict.union otherDict board
+
+        -- _ =
+        --     Debug.log "fixVals" <| Debug.toString otherDict
+    in
+    newBoard
 
 
 quadrantCoords : ( Int, Int ) -> List ( Int, Int )
@@ -100,8 +169,8 @@ quadrantCoords tup =
     quadrantIndices
 
 
-fixPossibleVals : UpdateBoardMsg -> Board -> Board
-fixPossibleVals recMsg board =
+getNeighbors : UpdateBoardMsg -> List ( Int, Int )
+getNeighbors recMsg =
     let
         indices =
             getIndicesCat
@@ -117,24 +186,8 @@ fixPossibleVals recMsg board =
 
         allCoords =
             List.concat [ sameRow, sameCol, sameQuad ]
-
-        updateTile =
-            \tup ->
-                ( tup
-                , adjustPossibleVal recMsg <|
-                    getTile tup board
-                )
-
-        otherDict =
-            Dict.fromList <| List.map updateTile allCoords
-
-        newBoard =
-            Dict.union otherDict board
-
-        _ =
-            Debug.log "fixVals" <| Debug.toString otherDict
     in
-    newBoard
+    allCoords
 
 
 validValue tileVal =
