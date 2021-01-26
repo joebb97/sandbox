@@ -2,6 +2,7 @@ module Board exposing (..)
 
 import Dict exposing (Dict)
 import Random
+import Random.Set
 import Set exposing (Set)
 
 
@@ -10,7 +11,7 @@ rowSize =
 
 
 preSolved =
-    25
+    27
 
 
 type alias Tile =
@@ -56,23 +57,23 @@ coordGen =
     Random.pair (Random.int 0 8) (Random.int 0 8)
 
 
-nextCoord : List ( Int, Int ) -> Random.Generator (List (Int, Int) )
-nextCoord soFar =
-    coordGen
-        |> Random.andThen
-            (\coord ->
-                if List.member coord soFar then
-                    -- try again
-                    Random.lazy (\_ -> nextCoord soFar)
+-- nextCoord : List ( Int, Int ) -> Random.Generator (List ( Int, Int ))
+-- nextCoord soFar =
+--     coordGen
+--         |> Random.andThen
+--             (\coord ->
+--                 if List.member coord soFar then
+--                     -- try again
+--                     Random.lazy (\_ -> nextCoord soFar)
 
-                else
-                    Random.constant (coord :: soFar)
-            )
+--                 else
+--                     Random.constant (coord :: soFar)
+--             )
 
 
-preFilledGen : Random.Generator (List ( Int, Int ))
+preFilledGen : Random.Generator (Set ( Int, Int ))
 preFilledGen =
-    Random.list preSolved coordGen |> Random.andThen nextCoord 
+    Random.Set.set preSolved coordGen
 
 
 addRandomTileAt : ( Int, Int ) -> Board -> Random.Generator Board
@@ -106,16 +107,17 @@ addRandomTileAt coord board =
             rec
     in
     Random.uniform front back
-    |> Random.map (\sel -> applyUpdateAndFix (recMsg <| String.fromInt sel) board)
+        |> Random.map (\sel -> applyUpdateAndFix (recMsg <| String.fromInt sel) board)
 
 
-boardFromPositions : Board -> List ( Int, Int ) -> Random.Generator Board
+boardFromPositions : Board -> Set ( Int, Int ) -> Random.Generator Board
 boardFromPositions board positions =
     let
         _ =
-            Debug.log "boardFromPositions" <| Debug.toString positions ++ " " ++ Debug.toString (List.length positions)
+            Debug.log "boardFromPositions" <| Debug.toString positions ++ " " ++ Debug.toString (Set.size positions)
+
     in
-    List.foldl
+    Set.foldl
         (\pos boardSoFarGen ->
             boardSoFarGen
                 |> Random.andThen (addRandomTileAt pos)
@@ -135,12 +137,16 @@ applyUpdate recMsg board =
 
         -- _ =
         --     Debug.log "applyUpdate" <| Debug.toString recMsg ++ Debug.toString the_rec
-        (newVal, newPossibleVals) =
-            if validValue recMsg.newValue && not (Set.isEmpty the_rec.possibleVals ) then
-                (recMsg.newValue, Set.empty)
+        -- TODO: Fix this to be "in the_rec.possibleVals"
+        possibleVal =
+            Maybe.withDefault 0 <| String.toInt recMsg.newValue
+
+        ( newVal, newPossibleVals ) =
+            if validValue recMsg.newValue && Set.member possibleVal the_rec.possibleVals then
+                ( recMsg.newValue, Set.empty )
 
             else
-                ("", the_rec.possibleVals)
+                ( "", the_rec.possibleVals )
 
         new_rec =
             { the_rec | value = newVal, possibleVals = newPossibleVals }

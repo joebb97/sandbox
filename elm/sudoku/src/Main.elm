@@ -90,15 +90,11 @@ update msg model =
                 (preFilledGen |> Random.andThen (boardFromPositions defaultBoard))
             )
 
+        NewRandom newRand ->
+            ( { model | board = newRand }, Cmd.none )
+
         SolveBoard ->
             ( model, Cmd.none )
-
-        NewRandom newRand ->
-            -- let
-            --     _ =
-            --         Debug.log "NewRandom" <| Debug.toString newRand
-            -- in
-            ( { model | board = newRand }, Cmd.none )
 
 
 tileToInput : ( ( Int, Int ), Tile ) -> Html Msg
