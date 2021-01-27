@@ -161,6 +161,13 @@ solveBoard board =
     ( newBoard, False )
 
 
+immutableClassStr: Tile -> String
+immutableClassStr tile =
+    if tile.immutable then
+        "immutable"
+    else
+        "mutable"
+
 tileToInput : ( ( Int, Int ), Tile ) -> Html Msg
 tileToInput info =
     let
@@ -178,7 +185,15 @@ tileToInput info =
         helper input =
             UpdateBoard { boardMsg | newValue = input }
     in
-    td [] [ input [ type_ "text", value tile.value, onInput helper ] [] ]
+    td []
+        [ input
+            [ type_ "text"
+            , value tile.value
+            , class (immutableClassStr tile)
+            , onInput helper
+            ]
+            []
+        ]
 
 
 rowToTr : List ( ( Int, Int ), Tile ) -> Html Msg

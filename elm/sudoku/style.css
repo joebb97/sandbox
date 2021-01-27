@@ -6,6 +6,14 @@ table, button {
     margin: 10px; 
 }
 
+.immutable {
+    color: red;
+}
+
+.mutable {
+    color: black;
+}
+
 tr:first-child td {
     border-top-color: black;
 }
