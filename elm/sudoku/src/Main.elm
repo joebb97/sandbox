@@ -70,7 +70,7 @@ update msg model =
                     case String.toInt recMsg.newValue of
                         Just value ->
                             if (value >= 1 && value <= 9) && Set.member value tile.possibleVals then
-                                fixPossibleVals recMsg <| applyUpdate recMsg model.board
+                                applyUpdateAndFix recMsg model.board
 
                             else
                                 model.board
@@ -78,7 +78,11 @@ update msg model =
                         Nothing ->
                             fixPossibleVals cleared <| applyUpdate cleared model.board
             in
-            ( { board = newBoard, solved = False }, Cmd.none )
+            if not recMsg.newImmutable then
+                ( { board = newBoard, solved = False }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
 
         ClearBoard ->
             ( initialModel, Cmd.none )
@@ -94,7 +98,67 @@ update msg model =
             ( { model | board = newRand }, Cmd.none )
 
         SolveBoard ->
-            ( model, Cmd.none )
+            let
+                ( newBoard, solved ) =
+                    solveBoard model.board
+            in
+            ( { model | board = newBoard, solved = solved }, Cmd.none )
+
+
+tryValue : Int -> ( Tile, Bool ) -> ( Tile, Bool )
+tryValue possibleVal tileSolvedPair =
+    let
+        ( tile, solved ) =
+            tileSolvedPair
+    in
+    ( tile, solved )
+
+
+solveTile : ( Int, Int ) -> Tile -> ( Board, Bool ) -> ( Board, Bool )
+solveTile key tile boardSolvedPair =
+    let
+        ( row, col ) =
+            key
+
+        ( board, solved ) =
+            boardSolvedPair
+
+        ( newBoard, newSolved ) =
+            if Set.isEmpty tile.possibleVals then
+                if not (validValue tile.value) then
+                    ( board, False )
+
+                else
+                    ( board, solved )
+
+            else if solved then
+                ( board, True )
+
+            else
+                let
+                    ( newValue, success ) =
+                        Set.foldl tryValue ( tile, False ) tile.possibleVals
+
+                    updateMsg =
+                        { newValue = newValue.value
+                        , oldValue = tile.value
+                        , rowID = row
+                        , colID = col
+                        , newImmutable = False
+                        }
+                in
+                ( applyUpdateAndFix updateMsg board, success )
+    in
+    ( newBoard, newSolved )
+
+
+solveBoard : Board -> ( Board, Bool )
+solveBoard board =
+    let
+        ( newBoard, solved ) =
+            Dict.foldl solveTile ( Dict.empty, False ) board
+    in
+    ( newBoard, False )
 
 
 tileToInput : ( ( Int, Int ), Tile ) -> Html Msg
@@ -104,7 +168,12 @@ tileToInput info =
             info
 
         boardMsg =
-            { rowID = row, colID = col, oldValue = tile.value, newValue = tile.value }
+            { rowID = row
+            , colID = col
+            , oldValue = tile.value
+            , newValue = tile.value
+            , newImmutable = tile.immutable
+            }
 
         helper input =
             UpdateBoard { boardMsg | newValue = input }

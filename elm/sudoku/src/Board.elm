@@ -15,12 +15,12 @@ preSolved =
 
 
 type alias Tile =
-    { value : String, possibleVals : Set Int }
+    { value : String, possibleVals : Set Int, immutable : Bool }
 
 
 defaultTile : Tile
 defaultTile =
-    { value = "", possibleVals = Set.empty }
+    { value = "", possibleVals = Set.empty, immutable = False }
 
 
 type alias Board =
@@ -40,6 +40,7 @@ defaultBoard =
             \tup ->
                 { value = ""
                 , possibleVals = initVals
+                , immutable = False
                 }
 
         init_board =
@@ -49,26 +50,12 @@ defaultBoard =
 
 
 type alias UpdateBoardMsg =
-    { rowID : Int, colID : Int, newValue : String, oldValue : String }
+    { rowID : Int, colID : Int, newValue : String, oldValue : String, newImmutable: Bool}
 
 
 coordGen : Random.Generator ( Int, Int )
 coordGen =
     Random.pair (Random.int 0 8) (Random.int 0 8)
-
-
--- nextCoord : List ( Int, Int ) -> Random.Generator (List ( Int, Int ))
--- nextCoord soFar =
---     coordGen
---         |> Random.andThen
---             (\coord ->
---                 if List.member coord soFar then
---                     -- try again
---                     Random.lazy (\_ -> nextCoord soFar)
-
---                 else
---                     Random.constant (coord :: soFar)
---             )
 
 
 preFilledGen : Random.Generator (Set ( Int, Int ))
@@ -99,10 +86,15 @@ addRandomTileAt coord board =
         recMsg val =
             let
                 rec =
-                    { rowID = row, colID = col, newValue = val, oldValue = theTile.value }
+                    { rowID = row
+                    , colID = col
+                    , newValue = val
+                    , oldValue = theTile.value
+                    , newImmutable = True
+                    }
 
-                _ =
-                    Debug.log "addRandom" <| "possible vals = " ++ Debug.toString asList ++ " " ++ Debug.toString rec
+                -- _ =
+                --     Debug.log "addRandom" <| "possible vals = " ++ Debug.toString asList ++ " " ++ Debug.toString rec
             in
             rec
     in
@@ -112,11 +104,10 @@ addRandomTileAt coord board =
 
 boardFromPositions : Board -> Set ( Int, Int ) -> Random.Generator Board
 boardFromPositions board positions =
-    let
-        _ =
-            Debug.log "boardFromPositions" <| Debug.toString positions ++ " " ++ Debug.toString (Set.size positions)
-
-    in
+    -- let
+    --     _ =
+    --         Debug.log "boardFromPositions" <| Debug.toString positions ++ " " ++ Debug.toString (Set.size positions)
+    -- in
     Set.foldl
         (\pos boardSoFarGen ->
             boardSoFarGen
@@ -135,9 +126,6 @@ applyUpdate recMsg board =
         the_rec =
             getTile tup board
 
-        -- _ =
-        --     Debug.log "applyUpdate" <| Debug.toString recMsg ++ Debug.toString the_rec
-        -- TODO: Fix this to be "in the_rec.possibleVals"
         possibleVal =
             Maybe.withDefault 0 <| String.toInt recMsg.newValue
 
@@ -149,13 +137,20 @@ applyUpdate recMsg board =
                 ( "", the_rec.possibleVals )
 
         new_rec =
-            { the_rec | value = newVal, possibleVals = newPossibleVals }
+            { the_rec | value = newVal, possibleVals = newPossibleVals, immutable = recMsg.newImmutable }
     in
     Dict.insert tup new_rec board
 
 
 applyUpdateAndFix : UpdateBoardMsg -> Board -> Board
 applyUpdateAndFix recMsg board =
+    let
+        tile =
+            getTile ( recMsg.rowID, recMsg.colID ) board
+
+        _ =
+            Debug.log "applyUpdateAndFix" <| Debug.toString recMsg ++ " " ++ Debug.toString tile.possibleVals
+    in
     fixPossibleVals recMsg <| applyUpdate recMsg board
 
 
