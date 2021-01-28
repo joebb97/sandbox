@@ -46,6 +46,7 @@ type Msg
     | GenerateBoard Int
     | NewRandom Board
     | SolveBoard
+    | DefaultBoard
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -113,6 +114,9 @@ update msg model =
                         Debug.log "Success!" "yay"
             in
             ( { model | board = newBoard, solved = solved == Success }, Cmd.none )
+
+        DefaultBoard ->
+            ( { model | board = wikipediaBoard, solved = False}, Cmd.none)
 
 
 type SearchState
@@ -291,4 +295,7 @@ view model =
         , button
             [ onClick SolveBoard ]
             [ text "solve" ]
+        , button
+            [ onClick DefaultBoard ]
+            [ text "wikipedia board" ]
         ]
