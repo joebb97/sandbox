@@ -64,8 +64,8 @@ update msg model =
                 tile =
                     getTile ( recMsg.rowID, recMsg.colID ) model.board
 
-                _ =
-                    Debug.log "UpdateBoard Tile" <| Debug.toString tile
+                -- _ =
+                --     Debug.log "UpdateBoard Tile" <| Debug.toString tile
 
                 newBoard =
                     case String.toInt recMsg.newValue of
@@ -100,18 +100,18 @@ update msg model =
 
         SolveBoard ->
             let
-                _ =
-                    Debug.log "Attempting to solve" "thinking ..."
+                -- _ =
+                --     Debug.log "Attempting to solve" "thinking ..."
 
                 ( newBoard, solved ) =
                     solveBoard model.board
 
-                _ =
-                    if solved == Halt then
-                        Debug.log "Couldn't solve" "Darn"
+                -- _ =
+                --     if solved == Halt then
+                --         Debug.log "Couldn't solve" "Darn"
 
-                    else
-                        Debug.log "Success!" "yay"
+                --     else
+                --         Debug.log "Success!" "yay"
             in
             ( { model | board = newBoard, solved = solved == Success }, Cmd.none )
 
@@ -275,6 +275,13 @@ rowToTr row =
     tr [] <| List.map tileToInput row
 
 
+solvedText: Bool -> String
+solvedText solved = 
+    if solved then
+        "The puzzle is solved, hooray!"
+    else
+        "The puzzle hasn't been solved or has no solution" 
+
 view : Model -> Html Msg
 view model =
     let
@@ -298,4 +305,7 @@ view model =
         , button
             [ onClick DefaultBoard ]
             [ text "wikipedia board" ]
+        , br [] []
+        , p [] [ text (solvedText model.solved) ]
         ]
+        

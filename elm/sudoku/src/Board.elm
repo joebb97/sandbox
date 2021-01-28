@@ -148,8 +148,8 @@ applyUpdateAndFix recMsg board =
         tile =
             getTile ( recMsg.rowID, recMsg.colID ) board
 
-        _ =
-            Debug.log "applyUpdateAndFix" <| Debug.toString recMsg ++ " " ++ Debug.toString tile.possibleVals
+        -- _ =
+        --     Debug.log "applyUpdateAndFix" <| Debug.toString recMsg ++ " " ++ Debug.toString tile.possibleVals
     in
     fixPossibleVals recMsg <| applyUpdate recMsg board
 
@@ -327,8 +327,8 @@ getTile tup board =
             tile
 
         Nothing ->
-            let
-                _ =
-                    Debug.log "DEFAULT TILE!!!!"
-            in
+            -- let
+            --     _ =
+            --         Debug.log "DEFAULT TILE!!!!"
+            -- in
             defaultTile
