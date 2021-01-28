@@ -99,74 +99,144 @@ update msg model =
 
         SolveBoard ->
             let
+                _ =
+                    Debug.log "Attempting to solve" "thinking ..."
+
                 ( newBoard, solved ) =
                     solveBoard model.board
+
+                _ =
+                    if solved == Halt then
+                        Debug.log "Couldn't solve" "Darn"
+
+                    else
+                        Debug.log "Success!" "yay"
             in
-            ( { model | board = newBoard, solved = solved }, Cmd.none )
+            ( { model | board = newBoard, solved = solved == Success }, Cmd.none )
 
 
-tryValue : Int -> ( Tile, Bool ) -> ( Tile, Bool )
-tryValue possibleVal tileSolvedPair =
+type SearchState
+    = Halt
+    | Continue
+    | Success
+
+
+tryValue : ( Int, Int, Int ) -> ( Board, SearchState ) -> ( Board, SearchState )
+tryValue triple boardSolvedPair =
     let
-        ( tile, solved ) =
-            tileSolvedPair
+        ( board, _ ) =
+            boardSolvedPair
+
+        ( possibleVal, row, col ) =
+            triple
+
+        tile =
+            getTile ( row, col ) board
+
+        updateMsg =
+            { newValue = String.fromInt possibleVal
+            , oldValue = tile.value
+            , rowID = row
+            , colID = col
+            , newImmutable = False
+            }
+
+        ( newBoard, newState ) =
+            solveBoard <| applyUpdateAndFix updateMsg board
     in
-    ( tile, solved )
+    ( newBoard, newState )
 
 
-solveTile : ( Int, Int ) -> Tile -> ( Board, Bool ) -> ( Board, Bool )
+solveTile : ( Int, Int ) -> Tile -> ( Board, SearchState ) -> ( Board, SearchState )
 solveTile key tile boardSolvedPair =
     let
         ( row, col ) =
             key
 
-        ( board, solved ) =
+        ( board, searchState ) =
             boardSolvedPair
 
         ( newBoard, newSolved ) =
-            if Set.isEmpty tile.possibleVals then
+            if searchState == Halt then
+                ( board, Halt )
+
+            else if searchState == Success then
+                ( board, Success )
+
+            else if Set.isEmpty tile.possibleVals then
                 if not (validValue tile.value) then
-                    ( board, False )
+                    ( board, Halt )
 
                 else
-                    ( board, solved )
-
-            else if solved then
-                ( board, True )
+                    ( board, Continue )
 
             else
                 let
-                    ( newValue, success ) =
-                        Set.foldl tryValue ( tile, False ) tile.possibleVals
+                    asList =
+                        Set.toList tile.possibleVals
 
-                    updateMsg =
-                        { newValue = newValue.value
-                        , oldValue = tile.value
-                        , rowID = row
-                        , colID = col
-                        , newImmutable = False
-                        }
+                    outcomes =
+                        List.map
+                            (\possibleVal -> tryValue ( possibleVal, row, col ) boardSolvedPair)
+                            asList
+
+                    stillHope =
+                        List.filter (\outcome -> Tuple.second outcome == Continue) outcomes
+
+                    succeeded =
+                        List.filter (\outcome -> Tuple.second outcome == Success) outcomes
+
+                    failed = 
+                        List.filter (\outcome -> Tuple.second outcome == Halt) outcomes
                 in
-                ( applyUpdateAndFix updateMsg board, success )
+                if not (List.isEmpty succeeded) then
+                    Maybe.withDefault ( board, Halt ) <| List.head succeeded
+                else if not (List.isEmpty stillHope) then
+                    Maybe.withDefault ( board, Halt ) <| List.head stillHope
+                else
+                    Maybe.withDefault ( board, Halt) <| List.head failed
     in
     ( newBoard, newSolved )
 
 
-solveBoard : Board -> ( Board, Bool )
+isSolved : Board -> Bool
+isSolved board =
+    let
+        helper tup solved =
+            let
+                tile =
+                    getTile tup board
+            in
+            if validValue tile.value then
+                True && solved
+
+            else
+                False
+    in
+    List.foldl helper True getIndicesCat
+
+
+solveBoard : Board -> ( Board, SearchState )
 solveBoard board =
     let
         ( newBoard, solved ) =
-            Dict.foldl solveTile ( Dict.empty, False ) board
+            if isSolved board then
+                ( board, Success )
+
+            else
+                Dict.foldl solveTile ( board, Continue ) board
     in
-    ( newBoard, False )
+    ( newBoard, solved )
 
 
-immutableClassStr: Tile -> String
+immutableClassStr : Tile -> String
 immutableClassStr tile =
     if tile.immutable then
         "immutable"
+
     else
         "mutable"
+
 
 tileToInput : ( ( Int, Int ), Tile ) -> Html Msg
 tileToInput info =

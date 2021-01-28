@@ -181,7 +181,10 @@ adjustPossibleVal recMsg cands coord board =
             else
                 tile.possibleVals
     in
-    { tile | possibleVals = newPossibleVals }
+    if not (validValue tile.value) then
+        { tile | possibleVals = newPossibleVals }
+    else
+        tile
 
 
 getNeighborVals : ( Int, Int ) -> Board -> Set Int
