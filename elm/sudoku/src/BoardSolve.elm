@@ -37,14 +37,17 @@ tryValue triple boardSolvedPair =
     ( newBoard, newState )
 
 
-solveTile : ( Int, Int ) -> Tile -> ( Board, SearchState ) -> ( Board, SearchState )
-solveTile key tile boardSolvedPair =
+solveTile : ( Int, Int ) -> ( Board, SearchState ) -> ( Board, SearchState )
+solveTile coord boardSolvedPair =
     let
         ( row, col ) =
-            key
+            coord
 
         ( board, searchState ) =
             boardSolvedPair
+
+        tile =
+            getTile coord board
 
         ( newBoard, newSolved ) =
             if searchState == Halt then
@@ -83,6 +86,7 @@ solveTile key tile boardSolvedPair =
                     Maybe.withDefault ( board, Halt ) <| List.head succeeded
 
                 else if not (List.isEmpty stillHope) then
+                    -- TODO: Need to process all continues in case they yield success
                     Maybe.withDefault ( board, Halt ) <| List.head stillHope
 
                 else
@@ -91,31 +95,24 @@ solveTile key tile boardSolvedPair =
     ( newBoard, newSolved )
 
 
-isSolved : Board -> Bool
-isSolved board =
+solveBoard : Board -> ( Board, SearchState )
+solveBoard board =
     let
-        helper tup solved =
+        helper tup =
             let
                 tile =
                     getTile tup board
             in
-            if validValue tile.value then
-                True && solved
+            not (validValue tile.value)
 
-            else
-                False
-    in
-    List.foldl helper True getIndicesCat
+        unsolved =
+            List.filter helper <| getIndicesCat
 
-
-solveBoard : Board -> ( Board, SearchState )
-solveBoard board =
-    let
         ( newBoard, solved ) =
-            if isSolved board then
+            if List.isEmpty unsolved then
                 ( board, Success )
 
             else
-                Dict.foldl solveTile ( board, Continue ) board
+                List.foldl solveTile ( board, Continue ) unsolved
     in
     ( newBoard, solved )
