@@ -6,6 +6,10 @@ table, button {
     margin: 10px; 
 }
 
+p {
+    margin: 10px
+}
+
 .immutable {
     color: red;
 }
