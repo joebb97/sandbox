@@ -2,6 +2,7 @@ module BoardSolve exposing (..)
 
 import Board exposing (..)
 import Dict
+import List.Extra
 import Set exposing (Set)
 
 
@@ -14,7 +15,7 @@ type SearchState
 tryValue : ( Int, Int, Int ) -> ( Board, SearchState ) -> ( Board, SearchState )
 tryValue triple boardSolvedPair =
     let
-        ( board, _ ) =
+        ( board, curState ) =
             boardSolvedPair
 
         ( possibleVal, row, col ) =
@@ -32,7 +33,10 @@ tryValue triple boardSolvedPair =
             }
 
         ( newBoard, newState ) =
-            solveBoard <| applyUpdateAndFix updateMsg board
+            if curState /= Success then
+                solveBoard <| applyUpdateAndFix updateMsg board
+            else
+                (board, curState)
     in
     ( newBoard, newState )
 
@@ -67,30 +71,11 @@ solveTile coord boardSolvedPair =
                 let
                     asList =
                         Set.toList tile.possibleVals
-
-                    outcomes =
-                        List.map
-                            (\possibleVal -> tryValue ( possibleVal, row, col ) boardSolvedPair)
-                            asList
-
-                    stillHope =
-                        List.filter (\outcome -> Tuple.second outcome == Continue) outcomes
-
-                    succeeded =
-                        List.filter (\outcome -> Tuple.second outcome == Success) outcomes
-
-                    failed =
-                        List.filter (\outcome -> Tuple.second outcome == Halt) outcomes
                 in
-                if not (List.isEmpty succeeded) then
-                    Maybe.withDefault ( board, Halt ) <| List.head succeeded
-
-                else if not (List.isEmpty stillHope) then
-                    -- TODO: Need to process all continues in case they yield success
-                    Maybe.withDefault ( board, Halt ) <| List.head stillHope
-
-                else
-                    Maybe.withDefault ( board, Halt ) <| List.head failed
+                List.foldl
+                    (\possibleVal curPair-> tryValue ( possibleVal, row, col ) curPair)
+                    boardSolvedPair
+                    asList
     in
     ( newBoard, newSolved )
 
@@ -113,6 +98,13 @@ solveBoard board =
                 ( board, Success )
 
             else
-                List.foldl solveTile ( board, Continue ) unsolved
+                let
+                    mrv =
+                        List.Extra.minimumBy (\tup -> Set.size <| .possibleVals <| getTile tup board) unsolved
+
+                    theHead =
+                        Maybe.withDefault ( -1, -1 ) <| mrv
+                in
+                solveTile theHead ( board, Continue )
     in
     ( newBoard, solved )
