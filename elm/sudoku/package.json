@@ -12,6 +12,6 @@
     "elm-live": "^4.0.2"
   },
   "dependencies": {
-    "elm": "^0.19.1-no-deps"
+    "elm": "^0.19.1-3"
   }
 }
