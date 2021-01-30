@@ -6,14 +6,22 @@ import Random.Set
 import Set exposing (Set)
 
 
+preSolved =
+    27
+
+
+toStart =
+    10
+
+
 coordGen : Random.Generator ( Int, Int )
 coordGen =
     Random.pair (Random.int 0 8) (Random.int 0 8)
 
 
-preFilledGen : Random.Generator (Set ( Int, Int ))
-preFilledGen =
-    Random.Set.set preSolved coordGen
+preFilledGen : Int -> Random.Generator (Set ( Int, Int ))
+preFilledGen num =
+    Random.Set.set num coordGen
 
 
 addRandomTileAt : ( Int, Int ) -> Board -> Random.Generator Board
@@ -68,3 +76,37 @@ boardFromPositions board positions =
         )
         (Random.constant board)
         positions
+
+
+removeSome : Board -> Set ( Int, Int ) -> Board
+removeSome board indices =
+    let
+
+        coordToRecMsg coord inBoard =
+            let
+                tile =
+                    getTile coord inBoard
+
+                ( row, col ) =
+                    coord
+
+                msg =
+                    { rowID = row
+                    , colID = col
+                    , oldValue = tile.value
+                    , newValue = ""
+                    , newImmutable = False
+                    }
+            in
+            msg
+
+        helper theBoard theIndices =
+            Set.foldl
+                (\coord curBoard -> applyUpdateAndFix (coordToRecMsg coord curBoard) curBoard)
+                theBoard
+                theIndices
+
+        newBoard =
+            helper board indices
+    in
+    newBoard

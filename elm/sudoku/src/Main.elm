@@ -4,6 +4,7 @@ import Board exposing (..)
 import BoardGen exposing (..)
 import BoardSolve exposing (..)
 import Browser
+import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
@@ -61,8 +62,8 @@ init _ =
 type Msg
     = UpdateBoard UpdateBoardMsg
     | ClearBoard
-    | GenerateBoard Int
-    | NewRandom Board
+    | GenerateBoard
+    | NewRandom ( Board, Set ( Int, Int ) )
     | StartSolveBoard
     | DoneSolveBoard ( Board, SearchState )
     | DefaultBoard
@@ -106,15 +107,34 @@ update msg model =
         ClearBoard ->
             ( initialModel, Cmd.none )
 
-        GenerateBoard _ ->
+        GenerateBoard ->
+            let
+                removeIndices =
+                    81 - preSolved |> preFilledGen
+
+                randomBoard =
+                    preFilledGen toStart |> Random.andThen (boardFromPositions defaultBoard)
+
+                pair =
+                    Random.pair randomBoard removeIndices
+            in
             ( { model | solvedText = defaultSolvedText }
-            , Random.generate
-                NewRandom
-                (preFilledGen |> Random.andThen (boardFromPositions defaultBoard))
+            , Random.generate NewRandom pair
             )
 
         NewRandom newRand ->
-            ( { model | board = newRand }, Cmd.none )
+            let
+                -- Should be solved
+                ( randomBoard, removeIndices ) =
+                    newRand
+
+                ( prelimBoard, _ ) =
+                    solveBoard randomBoard
+
+                solvedBoard =
+                    removeSome (Dict.map (\k v -> { v | immutable = True }) prelimBoard) removeIndices
+            in
+            ( { model | board = solvedBoard }, Cmd.none )
 
         StartSolveBoard ->
             ( { model | solvedText = "Attempting to solve, thinking ..." }, runSearchTask model )
@@ -194,7 +214,7 @@ view model =
             [ onClick ClearBoard ]
             [ text "clear" ]
         , button
-            [ onClick (GenerateBoard preSolved) ]
+            [ onClick GenerateBoard ]
             [ text "new puzzle" ]
         , button
             [ onClick StartSolveBoard ]

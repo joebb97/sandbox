@@ -10,10 +10,6 @@ rowSize =
     9
 
 
-preSolved =
-    27
-
-
 type alias Tile =
     { value : String, possibleVals : Set Int, immutable : Bool }
 

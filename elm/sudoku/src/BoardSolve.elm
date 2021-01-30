@@ -76,6 +76,9 @@ solveTile coord boardSolvedPair =
                 let
                     asList =
                         Set.toList tile.possibleVals
+                    -- TODO: Could sort list using Least Constraining Value heuristic
+                    -- to try choices that eliminate fewest variables from other tiles, first.
+                    -- Not needed for now though :)
                 in
                 List.foldl
                     (\possibleVal curPair -> tryValue ( possibleVal, row, col ) curPair)
