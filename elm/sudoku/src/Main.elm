@@ -1,6 +1,8 @@
 module Main exposing (..)
 
 import Board exposing (..)
+import BoardGen exposing (..)
+import BoardSolve exposing (..)
 import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -11,8 +13,6 @@ import Set exposing (Set)
 import Task exposing (Task)
 import Time
 import Util exposing (..)
-import BoardSolve exposing (..)
-import BoardGen exposing (..)
 
 
 
@@ -135,7 +135,6 @@ runSearchTask model =
     -- 20 milliseconds
     Process.sleep 20
         |> Task.perform (\_ -> DoneSolveBoard (solveBoard model.board))
-
 
 
 immutableClassStr : Tile -> String

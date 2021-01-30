@@ -33,9 +33,17 @@ tryValue triple boardSolvedPair =
             }
 
         ( newBoard, newState ) =
+            if curState /= Success then
                 solveBoard <| applyUpdateAndFix updateMsg board
+
+            else
+                ( board, curState )
     in
-    ( newBoard, newState )
+    if newState == Success then
+        ( newBoard, newState )
+
+    else
+        ( board, newState )
 
 
 solveTile : ( Int, Int ) -> ( Board, SearchState ) -> ( Board, SearchState )
@@ -68,30 +76,11 @@ solveTile coord boardSolvedPair =
                 let
                     asList =
                         Set.toList tile.possibleVals
-
-                    outcomes =
-                        List.map
-                            (\possibleVal -> tryValue ( possibleVal, row, col ) boardSolvedPair)
-                            asList
-
-                    stillHope =
-                        List.filter (\outcome -> Tuple.second outcome == Continue) outcomes
-
-                    succeeded =
-                        List.filter (\outcome -> Tuple.second outcome == Success) outcomes
-
-                    failed =
-                        List.filter (\outcome -> Tuple.second outcome == Halt) outcomes
                 in
-                if not (List.isEmpty succeeded) then
-                    Maybe.withDefault ( board, Halt ) <| List.head succeeded
-
-                else if not (List.isEmpty stillHope) then
-                    -- TODO: Need to process all continues in case they yield success
-                    Maybe.withDefault ( board, Halt ) <| List.head stillHope
-
-                else
-                    Maybe.withDefault ( board, Halt ) <| List.head failed
+                List.foldl
+                    (\possibleVal curPair -> tryValue ( possibleVal, row, col ) curPair)
+                    boardSolvedPair
+                    asList
     in
     ( newBoard, newSolved )
 
