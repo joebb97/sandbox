@@ -1,0 +1,15 @@
+{
+  "name": "sudoku",
+  "version": "1.0.0",
+  "description": "```bash $ ./optimize.sh src/Main.elm $ elm reactor --port 8002 # then visit http://localhost:8002/index.html in your web browser ```",
+  "main": "app.min.js",
+  "scripts": {
+    "build": "mkdir -p dist && ./optimize.sh src/Main.elm && cp app.min.js dist/ && cp index.html dist/ && cp style.css dist/",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "elm-live": "^4.0.2"
+  }
+}
