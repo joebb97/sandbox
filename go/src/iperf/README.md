@@ -5,12 +5,12 @@ Supports tcp and udp
 ## Run Server
 
 ```
-$ go run echo_net.go -s [-proto tcp|udp] [-p port] [-a addr] [-b buffersize]
+$ go run iperf.go -s [-proto tcp|udp] [-p port] [-a addr] [-b buffersize]
 ```
 
 ## Run Client
 ```
-$ go run echo_net.go -c [-proto tcp|udp] [-p port] [-a addr] [-b buffersize]
+$ go run iperf.go -c [-proto tcp|udp] [-p port] [-a addr] [-b buffersize] [-t runtime]
 ```
 
 ## Expected Behavior
