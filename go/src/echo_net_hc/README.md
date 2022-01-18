@@ -23,7 +23,7 @@ $ ./bin/mac/echo_net -c [-port port] [-a addr]
 
 ## Expected Behavior
 
-Whatever the client sends, the server sends back. Typically the server is run on linux in your docker compose network.
+Whatever the client sends, the server sends back.
 The server prints what it got from the client. The client prints what got sent back.
 
 # Doing halfclose
