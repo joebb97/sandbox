@@ -1,0 +1,11 @@
+TCP Connection comes with two sides (two network sockets / file descriptors)
+
+        R/W
+Client ------> Server
+
+        R/W
+Client <------ Server
+
+Normal close is when both R/W are closed at the same time over a link. Normally both sides do this at the same time.
+
+Half close is when one of either R/W are closed. Normally both sides do this one at a time
