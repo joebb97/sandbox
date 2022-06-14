@@ -41,3 +41,4 @@ Session.vim
 builddir
 tags.lock
 env
+ocaml/helloworld/_build

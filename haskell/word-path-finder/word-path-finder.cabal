@@ -25,7 +25,7 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
+      PathFinder
   other-modules:
       Paths_word_path_finder
   hs-source-dirs:
