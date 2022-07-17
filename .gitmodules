@@ -1,3 +1,6 @@
 [submodule "rust/lc2k_as"]
 	path = rust/lc2k_as
 	url = git@github.com:joebb97/lc2k_as.git
+[submodule "rust/echo_net"]
+	path = rust/echo_net
+	url = git@github.com:joebb97/rust_echo_net.git
