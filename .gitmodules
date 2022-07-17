@@ -1,0 +1,3 @@
+[submodule "rust/lc2k_as"]
+	path = rust/lc2k_as
+	url = git@github.com:joebb97/lc2k_as.git
