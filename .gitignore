@@ -30,6 +30,7 @@ go/src/*
 !go/src/echo_net/
 !go/src/echo_net_hc/
 !go/src/iperf/
+!go/src/unmarsh/
 compile_commands.json
 CMakeCache.txt
 build

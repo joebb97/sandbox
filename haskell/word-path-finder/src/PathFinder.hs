@@ -1,9 +1,12 @@
 module PathFinder where
 
 import qualified Data.Map as Map
+import qualified Data.Set as Set
 
-buildPathFinder args = a
+buildPathFinder args contents = pf
   where
+    pf = (asSet, contents)
+    asSet = Set.fromList args
 
 findPath pathFinder = "theAnswer"
 
@@ -14,6 +17,7 @@ data PathFinder =
     , dict :: Map.Map Int String
     }
   deriving (Show)
+
 -- let initPf = pushWord pf beginWord
 -- let path = findPath initPf
 --

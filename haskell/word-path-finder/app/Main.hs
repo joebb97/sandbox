@@ -6,4 +6,7 @@ import PathFinder
 main :: IO ()
 main = do
     args <- getArgs
-    print $ buildPathFinder args
+    contents <- getContents
+    let pf = buildPathFinder args contents
+    print $ pf
+    print $ findPath pf
