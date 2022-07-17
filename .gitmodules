@@ -10,3 +10,6 @@
 [submodule "go/src/echo_net"]
 	path = go/src/echo_net
 	url = git@github.com:joebb97/go_echo_net.git
+[submodule "go/src/echo_net_hc"]
+	path = go/src/echo_net_hc
+	url = git@github.com:joebb97/go_echo_net_hc.git
