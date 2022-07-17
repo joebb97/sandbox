@@ -13,3 +13,6 @@
 [submodule "go/src/echo_net_hc"]
 	path = go/src/echo_net_hc
 	url = git@github.com:joebb97/go_echo_net_hc.git
+[submodule "go/src/iperf"]
+	path = go/src/iperf
+	url = git@github.com:joebb97/go_iperf.git
