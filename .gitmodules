@@ -7,3 +7,6 @@
 [submodule "elm/sudoku"]
 	path = elm/sudoku
 	url = git@github.com:joebb97/elm_sudoku.git
+[submodule "go/src/echo_net"]
+	path = go/src/echo_net
+	url = git@github.com:joebb97/go_echo_net.git
