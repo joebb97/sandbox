@@ -1,7 +1,0 @@
-[package]
-name = "lc2k_as"
-version = "0.1.0"
-authors = ["Joseph Buiteweg <joebb@umich.edu>"]
-edition = "2018"
-
-[dependencies]
