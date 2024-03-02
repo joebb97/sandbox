@@ -1,5 +1,10 @@
-
 fn main() {
+    let b = br##"foo "#" bar"##;
+    println!("{:X?}",b);
+}
+
+#[allow(dead_code)]
+fn ownership_main() {
     let s1 = gives_ownership();
     let s2 = String::from("hello");
     take_ownership(s2);
