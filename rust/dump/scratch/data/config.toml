@@ -1,0 +1,4 @@
+gateway_tcp_socket_path = "/tmp"
+gateway_udp_socket_path = "/tmp"
+ca_file_path = "/tmp"
+test_execution_frequency = 88

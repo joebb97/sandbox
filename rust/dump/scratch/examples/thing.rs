@@ -1,22 +1,21 @@
-use async_std::io;
+use async_std::io::{self, Write as _};
 use async_std::sync::Mutex;
-use futures_time::task::sleep;
-use http::uri::Scheme;
 use core::time;
-use std::sync::Arc;
 use futures::channel::mpsc;
 use futures::{executor, AsyncWriteExt, SinkExt};
 use futures::{executor::ThreadPool, StreamExt};
+use futures_time::task::sleep;
 use futures_time::time::Duration;
 use http::header::*;
+use http::uri::Scheme;
 use http::Request;
 use std::fmt::Write as _;
-use std::io::Write as _;
 use std::os::unix::net::{UnixListener, UnixStream};
+use std::sync::Arc;
 use std::thread;
 use std::time::SystemTime;
 
-fn _main() {
+fn main() {
     let pool = ThreadPool::new().expect("Failed to build pool");
     let (mut tx, mut rx) = mpsc::channel::<String>(100);
 
@@ -37,43 +36,49 @@ fn _main() {
             }
         };
 
-        // let sender = async move {
-        //     let stdin = io::stdin();
-        //     let mut stdout = io::stdout();
-        //     loop {
-        //         stdout.write_all(b"> ").await.unwrap();
-        //         stdout.flush().await.unwrap();
-        //         let mut line = String::new();
-        //         stdin.read_line(&mut line).await.unwrap();
-        //         let s = line.trim();
-        //         if s.is_empty() {
-        //             continue;
-        //         }
-        //         tx.try_send(s.to_string()).unwrap();
-        //     }
-        // };
+        let mut sender_tx = tx.clone();
+        let sender = async move {
+            let stdin = io::stdin();
+            let mut stdout = io::stdout();
+            loop {
+                stdout.write_all(b"> ").await.unwrap();
+                stdout.flush().await.unwrap();
+                let mut line = String::new();
+                stdin.read_line(&mut line).await.unwrap();
+                let s = line.trim();
+                if s.is_empty() {
+                    continue;
+                }
+                sender_tx.try_send(s.to_string()).unwrap();
+            }
+        };
         let tx = Arc::new(Mutex::new(tx));
         let mut sent = 0;
         let sender1_tx = tx.clone();
         let sender1 = async move {
             loop {
                 // sender1_tx.lock().await.try_send(format!("hi {sent} from sender1")).unwrap();
-                sender1_tx.lock().await.send(format!("hi {sent} from sender1")).await.unwrap();
+                sender1_tx
+                    .lock()
+                    .await
+                    .send(format!("hi {sent} from sender1"))
+                    .await
+                    .unwrap();
                 sent += 1;
                 println!("sender1 {sent}");
                 sleep(Duration::from_millis(100)).await;
             }
         };
 
-//         let mut sent = 0;
-//         let sender2 = async move {
-//             loop {
-//                 tx.lock().await.send("hi {sent} from sender2".to_string()).await.unwrap();
-//                 sent += 1;
-//                 println!("sender2 {sent}");
-//                 sleep(Duration::from_millis(50)).await;
-//             }
-//         };
+        //         let mut sent = 0;
+        //         let sender2 = async move {
+        //             loop {
+        //                 tx.lock().await.send("hi {sent} from sender2".to_string()).await.unwrap();
+        //                 sent += 1;
+        //                 println!("sender2 {sent}");
+        //                 sleep(Duration::from_millis(50)).await;
+        //             }
+        //         };
 
         // let other = async {
         //     loop {
@@ -83,13 +88,13 @@ fn _main() {
         //     }
         // };
 
-        futures::join!(receiver, sender1)
+        futures::join!(receiver, sender)
     };
 
     executor::block_on(fut_values);
 }
 
-fn main() {
+fn _main() {
     let req: Request<Option<&[u8]>> = Request::builder()
         .method(http::Method::GET)
         .uri("https://hey.com/path/thing")
