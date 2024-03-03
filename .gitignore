@@ -44,3 +44,4 @@ builddir
 tags.lock
 env
 ocaml/helloworld/_build
+elm/freebpm/elm-stuff/0.19.1
