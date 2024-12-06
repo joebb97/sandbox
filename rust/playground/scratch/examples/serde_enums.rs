@@ -81,15 +81,4 @@ fn main() {
 
     let thing: Thing = serde_json::from_str(r#"{"other_field": "hey"}"#).unwrap();
     dbg!(&thing);
-
-    println!(
-        "{}",
-        serde_json::to_string(&EgressRulesResp {
-            egress_scheme: Some(EgressScheme::NamedEgress(NamedEgressScheme {
-                named_egress_pool: "pool".into(),
-                enable_udp_forwarding: true
-            }))
-        })
-        .unwrap()
-    );
 }
