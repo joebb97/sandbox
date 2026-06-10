@@ -8,24 +8,24 @@ impl Solution {
         let mut count = 0;
         let grid_y = grid.len();
         if grid_y == 0 {
-            return 0
+            return 0;
         }
         let grid_x = grid[0].len();
         for i in 0..grid.len() {
             for j in 0..grid[0].len() {
-                if !visited.contains(&(i,j)) && grid[i][j] == '1' {
+                if !visited.contains(&(i, j)) && grid[i][j] == '1' {
                     count += 1;
-                    to_visit.push_back((i,j));
+                    to_visit.push_back((i, j));
                     while let Some((i, j)) = to_visit.pop_front() {
                         let left = i.checked_sub(1).map(|i| (i, j));
                         let right = i.checked_add(1).filter(|sum| sum < &grid_y).map(|i| (i, j));
                         let top = j.checked_sub(1).map(|j| (i, j));
-                        let bot = j.checked_add(1).filter(|sum| sum < &grid_x).map(|j| (i,j));
+                        let bot = j.checked_add(1).filter(|sum| sum < &grid_x).map(|j| (i, j));
                         let neighbors = [left, top, right, bot];
-                        for (i,j) in neighbors.into_iter().flatten() {
-                            if !visited.contains(&(i,j)) && grid[i][j] == '1' {
-                                to_visit.push_back((i,j));
-                                visited.insert((i,j));
+                        for (i, j) in neighbors.into_iter().flatten() {
+                            if !visited.contains(&(i, j)) && grid[i][j] == '1' {
+                                to_visit.push_back((i, j));
+                                visited.insert((i, j));
                             }
                         }
                     }
