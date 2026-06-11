@@ -16,6 +16,7 @@ futures = { version = "0.3.29", features = ['executor', 'thread-pool']}
 futures-time = "3.0.0"
 http = "1.0.0"
 parking_lot = "0.12.1"
+pin-project = "1.1.13"
 regex = "=1.7.3"
 serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1.0.108"
